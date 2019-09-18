@@ -215,12 +215,6 @@
     "predeploy": "npm run build",
     "ghdeploy": "gh-pages -d build"
   },
-  "husky": {
-    "hooks": {
-      "post-merge": "node tools update",
-      "pre-commit": "npm run precommit"
-    }
-  },
   "browserslist": [
     "> 0.2%",
     "not dead"

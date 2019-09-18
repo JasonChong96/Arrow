@@ -12,7 +12,6 @@ import theme, { headerHeight } from 'modules/theme';
 import { utils } from 'styled-minimal';
 
 import config from 'config';
-import { showAlert } from 'actions/index';
 
 import Home from 'routes/Home';
 import Private from 'routes/Private';
@@ -21,20 +20,16 @@ import NotFound from 'routes/NotFound';
 import Header from 'components/Header';
 import SystemAlerts from 'containers/SystemAlerts';
 
-import Footer from 'components/Footer';
 import GlobalStyles from 'components/GlobalStyles';
-import RoutePublic from 'components/RoutePublic';
-import RoutePrivate from 'components/RoutePrivate';
 
 import { ActionTypes } from 'constants/index';
-import Head from '../components/Head';
+import { ToastContainer } from 'react-toastify';
 import Register from '../routes/Register';
-import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Routes from '../components/Routes';
 import Login from '../routes/Login';
 import { createMuiTheme } from '@material-ui/core';
-import { purple } from '@material-ui/core/colors';
+import { withStyles } from '@material-ui/styles';
 
 const AppWrapper = styled.div`
   display: flex;
@@ -57,10 +52,20 @@ const Main = styled.main`
   ${MainPrivate};
 `;
 
+const styles = {
+  main: {
+    display: 'flex',
+    justifyItems: 'start',
+    zIndex: 1200,
+    flexDirection: 'column',
+  },
+};
+
 export class App extends React.Component {
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
     user: PropTypes.object.isRequired,
+    classes: PropTypes.object.isRequired,
   };
 
   componentWillReceiveProps(nextProps) {
@@ -77,7 +82,7 @@ export class App extends React.Component {
   }
 
   render() {
-    const { dispatch, user } = this.props;
+    const { dispatch, user, classes } = this.props;
     return (
       <Router history={history}>
         <ThemeProvider theme={createMuiTheme(theme)}>
@@ -89,11 +94,11 @@ export class App extends React.Component {
               defaultTitle={config.name}
               titleTemplate={`%s | ${config.name}`}
               titleAttributes={{ itemprop: 'name', lang: 'pt-br' }}
-            ></Helmet>
+            />
             {user.isAuthenticated && <Header dispatch={dispatch} user={user} />}
             {/* <Head /> */}
             <ToastContainer autoClose={3000} hideProgressBar />
-            <Main isAuthenticated={user.isAuthenticated}>
+            <Main isAuthenticated={user.isAuthenticated} className={classes.main}>
               <Switch>
                 <Routes
                   isAuthenticated={user.isAuthenticated}
@@ -139,4 +144,4 @@ function mapStateToProps(state) {
   };
 }
 
-export default hot(connect(mapStateToProps)(App));
+export default hot(withStyles(styles)(connect(mapStateToProps)(App)));

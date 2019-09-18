@@ -1,11 +1,9 @@
-import { Toolbar, Paper, AppBar, IconButton, Menu, MenuItem } from '@material-ui/core';
-import Drawer from '@material-ui/core/Drawer';
-import MenuIcon from '@material-ui/icons/Menu';
-import React, { useState } from 'react';
+import { Toolbar, AppBar, Box, Grid } from '@material-ui/core';
+import React from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
-import theme from '../modules/theme';
 import { withStyles } from '@material-ui/styles';
+import Arrow from '@material-ui/icons/KeyboardArrowLeft';
+import theme from '../modules/theme';
 
 const styles = {
   titleBar: {
@@ -13,12 +11,23 @@ const styles = {
   },
 };
 
-function Head({ classes }) {
-  const [isMenuOpen, toggleMenu] = useState(false);
+function Head({ classes, title }) {
   return (
-    <AppBar className={classes.titleBar} position="relative">
-      <Toolbar>
-        <Drawer open={isMenuOpen} onClick={() => toggleMenu(false)}>
+    <AppBar className={classes.titleBar} position="relative" style={{ height: '8em' }}>
+      <Toolbar style={{ height: '8em' }}>
+        <Grid container alignItems="center" direction="column">
+          <Grid container item alignItems="center" spacing={2}>
+            <Grid item>
+              <Arrow fontSize="large" style={{ color: '#333333' }} />
+            </Grid>
+            <Grid item>
+              <Box fontWeight={600} fontSize={34} color="black">
+                {title}
+              </Box>
+            </Grid>
+          </Grid>
+        </Grid>
+        {/* <Drawer open={isMenuOpen} onClick={() => toggleMenu(false)}>
           <Link to="/">
             <MenuItem>Home</MenuItem>
           </Link>
@@ -31,15 +40,16 @@ function Head({ classes }) {
         </Drawer>
         <IconButton onClick={() => toggleMenu(!isMenuOpen)}>
           <MenuIcon />
-        </IconButton>
+        </IconButton> */}
       </Toolbar>
     </AppBar>
   );
 }
 
 Head.propTypes = {
-  dispatch: PropTypes.func.isRequired,
   classes: PropTypes.object.isRequired,
+  dispatch: PropTypes.func.isRequired,
+  title: PropTypes.string.isRequired,
 };
 
 export default withStyles(styles)(Head);
