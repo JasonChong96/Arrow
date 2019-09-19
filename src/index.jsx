@@ -21,7 +21,8 @@ export const app = {
 
     /* istanbul ignore else */
     if (process.env.NODE_ENV === 'production') {
-      this.initOfflinePlugin();
+      // TODO: temporarily disabled
+      // this.initOfflinePlugin();
     }
   },
   initOfflinePlugin() {

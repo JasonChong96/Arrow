@@ -5,7 +5,7 @@ import 'polyfills';
 
 Enzyme.configure({ adapter: new Adapter() });
 
-process.env.PUBLIC_URL = '';
+process.env.PUBLIC_URL = 'https://JasonChong96.github.io/BzBee';
 
 const react = document.createElement('div');
 react.id = 'react';
@@ -45,8 +45,8 @@ global.requestAnimationFrame = callback => {
 
 global.matchMedia = () => ({
   matches: false,
-  addListener: () => {},
-  removeListener: () => {},
+  addListener: () => { },
+  removeListener: () => { },
 });
 
 const consoleError = console.error;

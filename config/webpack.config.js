@@ -5,7 +5,7 @@ const dateFns = require('date-fns');
 
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
-const GitInfoPlugin = require('git-info-webpack-plugin');
+const GitInfoPlugin = require('git-rev-webpack-plugin');
 const HtmlPlugin = require('html-webpack-plugin');
 const InlineChunkHtmlPlugin = require('react-dev-utils/InlineChunkHtmlPlugin');
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin');
@@ -46,7 +46,10 @@ module.exports = webpackEnv => {
   // `publicUrl` is just like `publicPath`, but we will provide it to our app
   // as %PUBLIC_URL% in `index.html` and `process.env.PUBLIC_URL` in JavaScript.
   // Omit trailing slash as %PUBLIC_PATH%/xyz looks better than %PUBLIC_PATH%xyz.
-  const publicUrl = publicPath.slice(0, -1);
+  var publicUrl = publicPath;
+  if (!isProd) {
+    publicUrl = publicPath.slice(0, -1);
+  }
   // Get environment variables to inject into our app.
   const env = getClientEnvironment(publicUrl);
 
@@ -338,42 +341,42 @@ module.exports = webpackEnv => {
       new InterpolateHtmlPlugin(HtmlPlugin, env.raw),
       new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
       isProd &&
-        shouldInlineRuntimeChunk &&
-        new InlineChunkHtmlPlugin(HtmlPlugin, [/runtime~.+[.]js/]),
+      shouldInlineRuntimeChunk &&
+      new InlineChunkHtmlPlugin(HtmlPlugin, [/runtime~.+[.]js/]),
       isProd &&
-        new MiniCssExtractPlugin({
-          filename: 'css/bundle.[git-hash].css',
-          chunkFilename: 'css/bundle.[git-hash].chunk.css',
-        }),
-      isProd &&
-        new OfflinePlugin({
-          autoUpdate: true,
-          safeToUseOptionalCaches: true,
-          ServiceWorker: {
-            events: true,
-          },
-          AppCache: {
-            events: true,
-          },
-          caches: {
-            main: ['**/*.js', 'index.html'],
-            optional: [':rest:'],
-          },
-          cacheMaps: [
-            {
-              match: function match() {
-                return new URL('/', location);
-              },
-              requestTypes: ['navigate'],
+      new MiniCssExtractPlugin({
+        filename: 'css/bundle.[git-hash].css',
+        chunkFilename: 'css/bundle.[git-hash].chunk.css',
+      }),
+      isProd && false && // TODO: TEmporary disable
+      new OfflinePlugin({
+        autoUpdate: true,
+        safeToUseOptionalCaches: true,
+        ServiceWorker: {
+          events: true,
+        },
+        AppCache: {
+          events: true,
+        },
+        caches: {
+          main: ['**/*.js', 'index.html'],
+          optional: [':rest:'],
+        },
+        cacheMaps: [
+          {
+            match: function match() {
+              return new URL('/', location);
             },
-          ],
-        }),
+            requestTypes: ['navigate'],
+          },
+        ],
+      }),
       isDev &&
-        new CircularDependencyPlugin({
-          exclude: /node_modules/,
-          failOnError: true,
-          cwd: process.cwd(),
-        }),
+      new CircularDependencyPlugin({
+        exclude: /node_modules/,
+        failOnError: true,
+        cwd: process.cwd(),
+      }),
       // Add module names to factory functions so they appear in browser profiler.
       isDev && new webpack.NamedModulesPlugin(),
       // This is necessary to emit hot updates (currently CSS only):

@@ -2,6 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import RoutePublic from './RoutePublic';
 import RoutePrivate from './RoutePrivate';
+import NotFound from 'routes/NotFound';
+import { Route } from 'react-router-dom';
 
 export default function Routes({ isAuthenticated, paths }) {
   return (

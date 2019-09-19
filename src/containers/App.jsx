@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { hot } from 'react-hot-loader/root';
 import { connect } from 'react-redux';
-import { Router, Switch, Route } from 'react-router-dom';
+import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import Helmet from 'react-helmet';
 import styled, { css, ThemeProvider } from 'styled-components';
 import treeChanges from 'tree-changes';
@@ -83,8 +83,9 @@ export class App extends React.Component {
 
   render() {
     const { dispatch, user, classes } = this.props;
+    console.log(process.env.PUBLIC_URL);
     return (
-      <Router history={history}>
+      <BrowserRouter history={history} basename={process.env.PUBLIC_URL}>
         <ThemeProvider theme={createMuiTheme(theme)}>
           <AppWrapper logged={user.isAuthenticated}>
             <Helmet
@@ -125,7 +126,8 @@ export class App extends React.Component {
                     },
                   }}
                 />
-                <Route component={NotFound} />
+                <Route exact path='/login' component={Login} />
+                <Route exact component={NotFound} />
               </Switch>
             </Main>
             {/* <Footer /> */}
@@ -133,7 +135,7 @@ export class App extends React.Component {
             <GlobalStyles />
           </AppWrapper>
         </ThemeProvider>
-      </Router>
+      </BrowserRouter>
     );
   }
 }
