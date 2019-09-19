@@ -20,6 +20,7 @@ export const ActionTypes = keyMirror({
   USER_LOGOUT: undefined,
   USER_LOGOUT_SUCCESS: undefined,
   USER_LOGOUT_FAILURE: undefined,
+  SET_USER_INFO: undefined,
   GITHUB_GET_REPOS: undefined,
   GITHUB_GET_REPOS_SUCCESS: undefined,
   GITHUB_GET_REPOS_FAILURE: undefined,

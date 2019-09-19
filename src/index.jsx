@@ -39,7 +39,6 @@ export const app = {
   },
   render(Component) {
     const root = document.getElementById('react');
-
     /* istanbul ignore next */
     if (root) {
       ReactDOM.render(

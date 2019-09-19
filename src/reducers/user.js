@@ -6,6 +6,9 @@ import { STATUS, ActionTypes } from 'constants/index';
 export const userState = {
   isAuthenticated: false,
   status: STATUS.IDLE,
+  token: '',
+  email: '',
+  name: '',
 };
 
 export default {
@@ -28,6 +31,12 @@ export default {
         immutable(state, {
           isAuthenticated: { $set: false },
           status: { $set: STATUS.IDLE },
+        }),
+      [ActionTypes.SET_USER_INFO]: (state, { payload: { displayName, email, token } }) =>
+        immutable(state, {
+          displayName: { $set: displayName },
+          token: { $set: token },
+          email: { $set: email },
         }),
     },
     userState,

@@ -8,6 +8,7 @@ import axios from 'axios';
 import { ActionTypes } from 'constants/index';
 import { toast } from 'react-toastify';
 import { channel } from 'redux-saga';
+import { setUserInfo } from '../actions';
 
 const authAxios = axios.create({
   baseURL: 'https://bzbee.herokuapp.com/',
@@ -19,21 +20,32 @@ const authAxios = axios.create({
  */
 export function* login({ payload }) {
   const { email, password } = payload;
-  console.log(payload);
+  var token = '';
+  var realEmail = '';
+  var displayName = '';
   yield authAxios
     .post('/login', {
       email: email,
       password: password,
     })
-    .then(function(response) {
-      localStorage.setItem('user', response.data.jwt);
+    .then(function (response) {
+      token = response.data.jwt;
+      displayName = response.data.name;
+      realEmail = response.data.email;
     })
-    .catch(function(error) {
-      console.log(error);
+    .catch(function (error) {
       localStorage.removeItem('user');
-      toast.error(error.response.data.error, { position: toast.POSITION.TOP_RIGHT });
+      var errorMsg = 'Unable to connect to server'
+      if (error.response) {
+        errorMsg = error.response.data.error;
+      }
+      toast.error(errorMsg, { position: toast.POSITION.TOP_RIGHT });
     });
-  if (yield localStorage.getItem('user')) {
+  if (yield token) {
+    // TODO: TEMPORARY UNTIL BACKEND IS UPDATED
+    realEmail = 'twmtdw@gmail.com'
+    displayName = 'TW MTDW'
+    yield put(setUserInfo(token, realEmail, displayName));
     yield put({
       type: ActionTypes.USER_LOGIN_SUCCESS,
     });
@@ -52,11 +64,11 @@ export function* register({ payload }) {
       password: password,
       name: displayName,
     })
-    .then(function(response) {
+    .then(function (response) {
       console.log(response)
       localStorage.setItem('user', response.data.jwt);
     })
-    .catch(function(error) {
+    .catch(function (error) {
       console.log(error)
       localStorage.removeItem('user');
       toast.error(error.response.data.error, { position: toast.POSITION.TOP_RIGHT });

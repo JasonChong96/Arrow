@@ -1,14 +1,14 @@
 {
-  "name": "react-redux-saga-boilerplate",
-  "description": "Boilerplate with React and Redux with Redux Saga",
-  "version": "2019.7.0",
+  "name": "BzBee",
+  "description": "Project management",
+  "version": "2019.7.1",
   "author": "Gil Barbara <gilbarbara@gmail.com>",
   "homepage": "http://cs3216.github.io/a3-mobile-cloud-group-02",
   "repository": {
     "type": "git",
-    "url": "https://github.com/gilbarbara/react-redux-saga-boilerplate"
+    "url": "https://github.com/JasonChong96/BzBee"
   },
-  "bugs": "https://github.com/gilbarbara/react-redux-saga-boilerplate/issues",
+  "bugs": "https://github.com/JasonChong96/BzBee",
   "license": "MIT",
   "keywords": [
     "React",

@@ -1,88 +1,48 @@
+import { Toolbar, AppBar, Box, Grid } from '@material-ui/core';
 import React from 'react';
 import PropTypes from 'prop-types';
-import styled from 'styled-components';
-import { appColor, headerHeight } from 'modules/theme';
+import { withStyles } from '@material-ui/styles';
+import Arrow from '@material-ui/icons/KeyboardArrowLeft';
+import theme from '../modules/theme';
+import { Link } from 'react-router-dom';
 
-import { logOut } from 'actions';
+const styles = {
+  rootHeight: {
+    height: '8em',
+  },
+};
 
-import { Container, utils } from 'styled-minimal';
-import Icon from 'components/Icon';
-import Logo from 'components/Logo';
-
-const { responsive, spacer } = utils;
-
-const HeaderWrapper = styled.header`
-  background-color: #113740;
-  height: ${headerHeight}px;
-  left: 0;
-  position: fixed;
-  right: 0;
-  top: 0;
-  z-index: 200;
-
-  &:before {
-    background-color: ${appColor};
-    bottom: 0;
-    content: '';
-    height: 0.2rem;
-    left: 0;
-    position: absolute;
-    right: 0;
-  }
-`;
-
-const HeaderContainer = styled(Container)`
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  height: 100%;
-  justify-content: space-between;
-  padding-bottom: ${spacer(2)};
-  padding-top: ${spacer(2)};
-`;
-
-const Logout = styled.button`
-  align-items: center;
-  color: #fff;
-  display: flex;
-  font-size: 1.3rem;
-  padding: ${spacer(2)};
-
-  ${responsive({ lg: 'font-size: 1.6rem;' })}; /* stylelint-disable-line */
-
-  &.active {
-    color: #fff;
-  }
-
-  span {
-    display: inline-block;
-    margin-right: 0.4rem;
-    text-transform: uppercase;
-  }
-`;
-
-export default class Header extends React.PureComponent {
-  static propTypes = {
-    dispatch: PropTypes.func.isRequired,
-  };
-
-  handleClickLogout = () => {
-    const { dispatch } = this.props;
-
-    dispatch(logOut());
-  };
-
-  render() {
-    return (
-      <HeaderWrapper>
-        <HeaderContainer>
-          <Logo type="logo" />
-          <Logout onClick={this.handleClickLogout}>
-            <span>logout</span>
-            <Icon name="sign-out" width={16} />
-          </Logout>
-        </HeaderContainer>
-      </HeaderWrapper>
-    );
-  }
+function Header({ classes, contentComponent, backPath, color }) {
+  const Component = contentComponent;
+  return (
+    <AppBar className={classes.titleBar} position="relative" style={{ backgroundColor: color }}>
+      <Toolbar style={{ height: '8em' }}>
+        <Grid container alignItems="center" direction="column">
+          <Grid container item spacing={2}>
+            {backPath && <Grid item>
+              <Link to={backPath}>
+                <Arrow fontSize="large" style={{ color: '#333333', marginTop: '1rem' }} />
+              </Link>
+            </Grid>}
+            <Grid item>
+              <Component />
+            </Grid>
+          </Grid>
+        </Grid>
+      </Toolbar>
+    </AppBar>
+  );
 }
+
+Header.propTypes = {
+  classes: PropTypes.object.isRequired,
+  contentComponent: PropTypes.func.isRequired,
+  backPath: PropTypes.string.isRequired,
+  color: PropTypes.string.isRequired,
+};
+
+Header.defaultProps = {
+  color: theme.palette.appBar,
+}
+
+export default withStyles(styles)(Header);

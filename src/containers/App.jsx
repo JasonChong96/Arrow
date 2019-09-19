@@ -17,7 +17,7 @@ import Home from 'routes/Home';
 import Private from 'routes/Private';
 import NotFound from 'routes/NotFound';
 
-import Header from 'components/Header';
+import Header from 'containers/Header';
 import SystemAlerts from 'containers/SystemAlerts';
 
 import GlobalStyles from 'components/GlobalStyles';
@@ -74,7 +74,7 @@ export class App extends React.Component {
 
     const user = localStorage.getItem('user');
     if (user) {
-      dispatch({ type: ActionTypes.USER_LOGIN_SUCCESS });
+      // dispatch({ type: ActionTypes.USER_LOGIN_SUCCESS });
     }
     if (changedTo('user.isAuthenticated', true)) {
       // dispatch(showAlert('Hello! And welcome!', { variant: 'success', icon: 'bell' }));

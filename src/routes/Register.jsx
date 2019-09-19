@@ -7,7 +7,8 @@ import { register } from '../actions/user';
 import UserTextField from '../components/UserTextField';
 import theme from '../modules/theme';
 import PasswordField from '../components/PasswordField';
-import Head from '../components/Head';
+import Header from '../components/Header';
+import TitleOnlyHeader from '../components/TitleOnlyHeader';
 
 
 function validateEmail(mail) {
@@ -55,7 +56,7 @@ function Register({ classes, dispatch }) {
   }
   return (
     <>
-      <Head title="Account Details" />
+      <TitleOnlyHeader title="Account Details" backPath="/login" />
       <Paper elevation={5} className={classes.paperRoot}>
         <Container maxWidth="sm">
           <form className={classes.formContainer}>
