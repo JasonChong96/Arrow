@@ -58,6 +58,9 @@ export function* login({ payload }) {
 
 export function* register({ payload }) {
   const { email, password, displayName } = payload;
+  var token = "";
+  var realEmail = "";
+  var name = "";
   yield authAxios
     .post('/signup', {
       email: email,
@@ -65,15 +68,15 @@ export function* register({ payload }) {
       name: displayName,
     })
     .then(function (response) {
-      console.log(response)
-      localStorage.setItem('user', response.data.jwt);
+      token = response.data.jwt;
+      name = response.data.name;
+      realEmail = response.data.email;
     })
     .catch(function (error) {
-      console.log(error)
-      localStorage.removeItem('user');
       toast.error(error.response.data.error, { position: toast.POSITION.TOP_RIGHT });
     });
-  if (yield localStorage.getItem('user')) {
+  if (yield token) {
+    yield put(setUserInfo(token, realEmail, name));
     yield put({
       type: ActionTypes.USER_LOGIN_SUCCESS,
     });

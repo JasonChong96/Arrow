@@ -7,16 +7,16 @@ import theme from '../modules/theme';
 import { Link } from 'react-router-dom';
 
 const styles = {
-  rootHeight: {
-    height: '8em',
-  },
 };
 
-function Header({ classes, contentComponent, backPath, color }) {
+function Header({ classes, contentComponent, backPath, color, height }) {
   const Component = contentComponent;
   return (
-    <AppBar className={classes.titleBar} position="relative" style={{ backgroundColor: color }}>
-      <Toolbar style={{ height: '8em' }}>
+    <AppBar className={classes.titleBar} position="relative" style={{
+      backgroundColor: color,
+      height,
+    }}>
+      <Toolbar style={{ height }}>
         <Grid container alignItems="center" direction="column">
           <Grid container item spacing={2}>
             {backPath && <Grid item>
@@ -24,13 +24,13 @@ function Header({ classes, contentComponent, backPath, color }) {
                 <Arrow fontSize="large" style={{ color: '#333333', marginTop: '1rem' }} />
               </Link>
             </Grid>}
-            <Grid item>
+            <Grid item style={{ flexGrow: 1 }}>
               <Component />
             </Grid>
           </Grid>
         </Grid>
       </Toolbar>
-    </AppBar>
+    </AppBar >
   );
 }
 
@@ -39,10 +39,12 @@ Header.propTypes = {
   contentComponent: PropTypes.func.isRequired,
   backPath: PropTypes.string.isRequired,
   color: PropTypes.string.isRequired,
+  height: PropTypes.string.isRequired,
 };
 
 Header.defaultProps = {
   color: theme.palette.appBar,
+  height: '8em',
 }
 
 export default withStyles(styles)(Header);

@@ -66,6 +66,10 @@ module.exports = webpackEnv => {
     inject: true,
     template: paths.appHtml,
     title: NPMPackage.title,
+    googleAnalytics: {
+      trackingId: 'UA-148364595-1',
+      pageViewOnLoad: true,
+    }
   };
 
   if (isProd) {
@@ -348,7 +352,7 @@ module.exports = webpackEnv => {
         filename: 'css/bundle.[git-hash].css',
         chunkFilename: 'css/bundle.[git-hash].chunk.css',
       }),
-      isProd && false && // TODO: TEmporary disable
+      isProd && // TODO: TEmporary disable
       new OfflinePlugin({
         autoUpdate: true,
         safeToUseOptionalCaches: true,

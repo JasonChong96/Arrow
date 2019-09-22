@@ -1,19 +1,25 @@
 import React from 'react';
 import styled from 'styled-components';
+import { connect } from 'react-redux';
 
 import Github from 'containers/GitHub';
 
 import { Box, Container, Heading, Link, Paragraph, Screen, Text, utils } from 'styled-minimal';
+import { Button } from '@material-ui/core';
+import { logOut } from '../actions/user';
 
 const Header = styled.div`
   margin-bottom: ${utils.spacer(3)};
   text-align: center;
 `;
 
-const Private = () => (
+const Private = ({ dispatch }) => (
   <Screen key="Private" data-testid="PrivateWrapper">
     <Container verticalPadding>
       <Header>
+        <Button onClick={() => dispatch(logOut())}>
+          Log out
+        </Button>
         <Heading>Oh hai!</Heading>
         <Paragraph>
           You can get this boilerplate{' '}
@@ -33,4 +39,4 @@ const Private = () => (
   </Screen>
 );
 
-export default Private;
+export default connect(null)(Private);

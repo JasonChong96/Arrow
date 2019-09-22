@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { hot } from 'react-hot-loader/root';
 import { connect } from 'react-redux';
-import { BrowserRouter, Switch, Route } from 'react-router-dom';
+import { HashRouter, Switch, Route } from 'react-router-dom';
 import Helmet from 'react-helmet';
 import styled, { css, ThemeProvider } from 'styled-components';
 import treeChanges from 'tree-changes';
@@ -30,6 +30,8 @@ import Routes from '../components/Routes';
 import Login from '../routes/Login';
 import { createMuiTheme } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
+import Projects from '../routes/Projects';
+import CreateProject from '../routes/CreateProject';
 
 const AppWrapper = styled.div`
   display: flex;
@@ -61,6 +63,44 @@ const styles = {
   },
 };
 
+const routes = {
+  '/': {
+    component: Home,
+    isPublic: true,
+    exact: true,
+  },
+  '/login': {
+    component: Login,
+    isPublic: true,
+    exact: true,
+  },
+  '/register': {
+    component: Register,
+    isPublic: true,
+    exact: true,
+  },
+  '/private': {
+    component: Private,
+    isPublic: false,
+    exact: false,
+  },
+  '/projects': {
+    component: Projects,
+    isPublic: true,
+    exact: false,
+  },
+  '/project/:code': {
+    component: Projects,
+    isPublic: true,
+    exact: false,
+  },
+  '/createproject': {
+    component: CreateProject,
+    isPublic: true,
+    exact: false,
+  }
+}
+
 export class App extends React.Component {
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
@@ -71,7 +111,6 @@ export class App extends React.Component {
   componentWillReceiveProps(nextProps) {
     const { dispatch } = this.props;
     const { changedTo } = treeChanges(this.props, nextProps);
-
     const user = localStorage.getItem('user');
     if (user) {
       // dispatch({ type: ActionTypes.USER_LOGIN_SUCCESS });
@@ -83,9 +122,8 @@ export class App extends React.Component {
 
   render() {
     const { dispatch, user, classes } = this.props;
-    console.log(process.env.PUBLIC_URL);
     return (
-      <BrowserRouter history={history} basename={process.env.PUBLIC_URL}>
+      <HashRouter history={history} basename='/'>
         <ThemeProvider theme={createMuiTheme(theme)}>
           <AppWrapper logged={user.isAuthenticated}>
             <Helmet
@@ -103,30 +141,8 @@ export class App extends React.Component {
               <Switch>
                 <Routes
                   isAuthenticated={user.isAuthenticated}
-                  paths={{
-                    '/': {
-                      component: Home,
-                      isPublic: true,
-                      exact: true,
-                    },
-                    '/login': {
-                      component: Login,
-                      isPublic: true,
-                      exact: true,
-                    },
-                    '/register': {
-                      component: Register,
-                      isPublic: true,
-                      exact: true,
-                    },
-                    '/private': {
-                      component: Private,
-                      isPublic: false,
-                      exact: false,
-                    },
-                  }}
+                  paths={routes}
                 />
-                <Route exact path='/login' component={Login} />
                 <Route exact component={NotFound} />
               </Switch>
             </Main>
@@ -135,7 +151,7 @@ export class App extends React.Component {
             <GlobalStyles />
           </AppWrapper>
         </ThemeProvider>
-      </BrowserRouter>
+      </HashRouter>
     );
   }
 }
