@@ -20,10 +20,10 @@ export const app = {
     this.render(App);
 
     /* istanbul ignore else */
-    if (process.env.NODE_ENV === 'production') {
-      // TODO: temporarily disabled
-      this.initOfflinePlugin();
-    }
+    //if (process.env.NODE_ENV === 'production') {
+    // TODO: temporarily disabled
+    this.initOfflinePlugin();
+    //}
   },
   initOfflinePlugin() {
     const OfflinePlugin = require('offline-plugin/runtime');

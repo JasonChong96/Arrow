@@ -17,6 +17,7 @@ import Project from '../components/Project';
 import { Link } from 'react-router-dom';
 import Delete from '@material-ui/icons/DeleteOutlined';
 import NumberCircle from '../components/NumberCircle';
+import MembersList from '../components/MembersList';
 
 const styles = {
     paperRoot: {
@@ -27,6 +28,13 @@ const styles = {
         marginTop: '-1em',
         flexGrow: 1,
         boxShadow: '0px -1px 5px rgba(0, 0, 0, 0.2), 0px -2px 5px rgba(0, 0, 0, 0.12), 0px 0px 5px rgba(0, 0, 0, 0.14)',
+    },
+    doneButton: {
+        background: theme.palette.primary[500],
+        borderRadius: '200px',
+        color: 'white',
+        textTransform: 'none',
+        padding: '0.5em 1em 0.5em 1em'
     },
 };
 
@@ -62,17 +70,8 @@ function CreateProject({ classes }) {
                     </Button>
                     </Box>
                 </Grid>
-                <Grid container item alignItems='center' spacing={1} direction='row' style={{ overflowX: 'scroll' }}>
-                    {[{ name: "Fake" }, { name: "Real" }, { name: "Idk" }].map(member => (
-                        <Grid container item direction='column' style={{ width: 'auto' }} alignItems='center'>
-                            <Grid item>
-                                <AccountIcon style={{ fontSize: "3em" }} />
-                            </Grid>
-                            <Box fontSize={12}>
-                                {member.name}
-                            </Box>
-                        </Grid>
-                    ))}
+                <Grid container item alignItems='center' spacing={1} direction='row' style={{ overflowX: 'auto' }}>
+                    <MembersList members={[{ name: "Fake" }, { name: "Real" }, { name: "Idk" }]} />
                     <Grid container item direction='column' style={{ width: 'auto' }} alignItems='center'>
                         <Grid item>
                             <ButtonBase style={{ display: 'inline-block' }}>
@@ -132,6 +131,23 @@ function CreateProject({ classes }) {
                                 </Grid>
                             </Grid>
                         ))}
+
+                        <Grid container item justify='flex-end' spacing={2} alignItems='center'>
+                            <Grid item>
+                                <ButtonBase>
+                                    <Box color={theme.palette.primary[500]}>
+                                        Discard Changes
+                                </Box>
+                                </ButtonBase>
+                            </Grid>
+                            <Grid item>
+                                <ButtonBase>
+                                    <Box className={classes.doneButton}>
+                                        Done!
+                                </Box>
+                                </ButtonBase>
+                            </Grid>
+                        </Grid>
                     </Grid>
                 </Container>
             </Paper>

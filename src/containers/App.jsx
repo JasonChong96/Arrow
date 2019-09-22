@@ -32,6 +32,7 @@ import { createMuiTheme } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
 import Projects from '../routes/Projects';
 import CreateProject from '../routes/CreateProject';
+import ProjectDetails from '../routes/ProjectDetails';
 
 const AppWrapper = styled.div`
   display: flex;
@@ -60,6 +61,7 @@ const styles = {
     justifyItems: 'start',
     zIndex: 1200,
     flexDirection: 'column',
+    minWidth: 450,
   },
 };
 
@@ -90,7 +92,7 @@ const routes = {
     exact: false,
   },
   '/project/:code': {
-    component: Projects,
+    component: ProjectDetails,
     isPublic: true,
     exact: false,
   },

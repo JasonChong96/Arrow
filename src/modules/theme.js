@@ -17,7 +17,7 @@ export default {
   },
   palette: {
     primary: amber,
-    appBar: amber[600],
+    appBar: amber[500],
   },
   button: {
     borderRadius: {

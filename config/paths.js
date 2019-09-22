@@ -32,6 +32,6 @@ module.exports = {
   dotenv: resolvePath('.env'),
   nodeModules: resolvePath('node_modules'),
   packageJson: resolvePath('package.json'),
-  publicPath: resolvePath('/BzBee/'),
+  publicPath: resolvePath('/'),
   test: resolvePath('test'),
 };
