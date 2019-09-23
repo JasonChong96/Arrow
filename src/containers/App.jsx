@@ -33,6 +33,7 @@ import { withStyles } from '@material-ui/styles';
 import Projects from '../routes/Projects';
 import CreateProject from '../routes/CreateProject';
 import ProjectDetails from '../routes/ProjectDetails';
+import EditTask from '../routes/EditTask';
 
 const AppWrapper = styled.div`
   display: flex;
@@ -61,7 +62,7 @@ const styles = {
     justifyItems: 'start',
     zIndex: 1200,
     flexDirection: 'column',
-    minWidth: 450,
+    minWidth: 350,
   },
 };
 
@@ -94,7 +95,12 @@ const routes = {
   '/project/:code': {
     component: ProjectDetails,
     isPublic: true,
-    exact: false,
+    exact: true,
+  },
+  '/project/:code/task/:taskid': {
+    component: EditTask,
+    isPublic: true,
+    exact: true,
   },
   '/createproject': {
     component: CreateProject,

@@ -25,7 +25,7 @@ const styles = {
 
 function RemainingTasksCircle({ classes, tasksLeft, overdue }) {
     return <div className={classes.root} style={{
-        backgroundColor: overdue ? red[500] : '#F8F8F8',
+        backgroundColor: overdue ? red[500] : '#F0F0F0',
         color: overdue ? 'white' : '#4F4F4F',
     }}>
         <Grid item className={classes.numberMargin}>

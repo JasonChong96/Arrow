@@ -14,6 +14,7 @@ import Person from '@material-ui/icons/Person';
 import People from '@material-ui/icons/People';
 import AddIcon from '@material-ui/icons/AddCircleOutline';
 import EditIcon from '@material-ui/icons/EditOutlined';
+import TickIcon from '@material-ui/icons/Done';
 import Project from '../components/Project';
 import { Link } from 'react-router-dom';
 import Delete from '@material-ui/icons/DeleteOutlined';
@@ -22,6 +23,9 @@ import RemainingTasksCircle from '../components/RemainingTasksCircle';
 import CircleOutlined from '../components/CircleOutlined';
 import MembersList from '../components/MembersList';
 import red from '@material-ui/core/colors/red';
+import CircleIcon from '../components/CircleIcon';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import ProjectEntry from '../components/ProjectEntry';
 
 const styles = {
     chipMilestone: {
@@ -84,7 +88,7 @@ const project = {
             "description": "Progressive web app",
             "color": "#ff0000",
             "deadline": new Date("2020-01-29T00:00:00.207Z"),
-            "completed": false,
+            "completed": true,
             "assignees": [
                 {
                     "email": "johnsmith@gmail.com",
@@ -116,7 +120,7 @@ const project = {
     ]
 }
 
-function ProjectDetails({ classes }) {
+function ProjectDetails({ classes, match: { params: { code } } }) {
     var subTasks = [];
     project.tasks.forEach(task => {
         task.subtasks.forEach(subtask => {
@@ -133,12 +137,13 @@ function ProjectDetails({ classes }) {
         isMilestone: true,
     })))
     allTasksAndSubtasks.sort((a, b) => a.deadline.getTime() - b.deadline.getTime());
+    var curMonth = new Date().getMonth();
     const upcomingMilestone = allTasksAndSubtasks.find(entry => entry.isMilestone && entry.deadline > new Date());
     const headerComponent = () =>
         <Grid container direction='column' spacing={2}>
             <Grid container item>
-                <Box fontSize={34} color='black' flexGrow='0.9'>
-                    CS3216
+                <Box fontSize={24} color='black' flexGrow='0.9'>
+                    {project.project.title}
                 </Box>
                 <Box alignSelf='flex-end' color='black'>
                     <ButtonBase>
@@ -147,8 +152,8 @@ function ProjectDetails({ classes }) {
                 </Box>
             </Grid>
             <Grid container item alignItems='center'>
-                <Box fontSize={28} color='#4F4F4F' marginRight='1em'>
-                    Sep
+                <Box fontSize={20} color='#4F4F4F' marginRight='1em'>
+                    {getMonthString(new Date().getMonth())}
                 </Box>
                 {upcomingMilestone && <>
                     <Box fontSize={14} color='#4F4F4F' marginRight='0.5em'>
@@ -158,12 +163,11 @@ function ProjectDetails({ classes }) {
                 </>}
             </Grid>
         </Grid >
-    var curMonth = allTasksAndSubtasks ? allTasksAndSubtasks[0].deadline.getMonth() : 0;
     return (
         <>
             <Header contentComponent={headerComponent} backPath={'/projects'} height='10em' />
             <Paper className={classes.paperRoot}>
-                <Container maxWidth='sm'>
+                <Container maxWidth='sm' style={{ paddingBottom: '2em' }}>
                     <Grid container direction='column' spacing={1}>
                         <Grid container item alignItems='center'>
                             <Grid item>
@@ -171,73 +175,10 @@ function ProjectDetails({ classes }) {
                             </Grid>
                         </Grid>
                         {allTasksAndSubtasks.map(entry => {
-                            const isOverdue = entry.deadline < new Date() && !entry.completed;
                             const entryMonth = entry.deadline.getMonth();
                             const renderMonth = entryMonth != curMonth;
                             curMonth = entryMonth;
-                            return <>
-                                {renderMonth && <Grid container item spacing={2} style={{ padding: '1em 0 1em 0' }}>
-                                    <Grid item style={{ width: '15%' }} />
-                                    <Box fontWeight='bold' fontSize='1.25em' color='#828282'>
-                                        {getMonthString(curMonth)}
-                                    </Box>
-                                </Grid>}
-                                <Grid container item spacing={2} >
-                                    <Grid container item direction='column' alignItems='center' style={{ width: '15%' }}>
-                                        <Box fontSize={20} color='#4F4F4F'>
-                                            {entry.deadline.getDate()}
-                                        </Box>
-                                        <Box fontSize={18} color='#B2B2B2'>
-                                            {getDayString(entry.deadline.getDay())}
-                                        </Box>
-                                    </Grid>
-                                    <Grid container item style={{ width: 'auto' }} direction='column' alignItems='center'>
-                                        <Box flexGrow={1} width={0} border='1px solid #DADADA' marginTop='-0.25em' />
-                                        <Box padding='0.25em 0.25em 0.25em 0.25em' />
-                                        <CircleOutlined color={isOverdue ? red[500] : '#DADADA'} />
-                                        <Box padding='0.25em 0.25em 0.25em 0.25em' />
-                                        <Box flexGrow={1} width={0} border='1px solid #DADADA' marginBottom='-0.25em' />
-                                    </Grid>
-                                    <Grid item style={{ flexGrow: 1 }}>
-                                        {entry.isMilestone &&
-                                            <>
-                                                <Grid container alignItems='center' style={{ margin: '2em 0 2em 0' }}>
-
-                                                    <Chip label={entry.name} className={classes.chipMilestone} />
-
-                                                    <Box color={theme.palette.primary[600]} flexGrow={1} textAlign='end' marginRight='1em'>
-                                                        2 Tasks Left
-                                                    </Box>
-                                                </Grid>
-                                            </>
-                                        }
-                                        {!entry.isMilestone && <Card raised style={{ width: '100%', borderLeft: '4px solid ' + entry.color }}>
-                                            <CardContent>
-                                                <Grid container direction='column' spacing={1}>
-                                                    <Grid container item spacing={1} alignItems='center'>
-                                                        <Grid item style={{ flexGrow: 1 }}>
-                                                            <Box fontSize={16}>
-                                                                {entry.title}
-                                                            </Box>
-                                                        </Grid>
-                                                        {entry.milestones && <Grid item justify='flex-end'>
-                                                            <Chip label={entry.milestones[0].name} className={classes.chipMilestone} />
-                                                        </Grid>}
-                                                    </Grid>
-                                                    <Grid item>
-                                                        <Box color='rgba(0,0,0,0.6)' fontSize='0.875em'>
-                                                            {entry.description}
-                                                        </Box>
-                                                    </Grid>
-                                                    <Grid item container>
-                                                        <MembersList members={entry.assignees} />
-                                                    </Grid>
-                                                </Grid>
-                                            </CardContent>
-                                        </Card>}
-                                    </Grid>
-                                </Grid>
-                            </>
+                            return <ProjectEntry entry={entry} renderMonth={renderMonth} />
                         })}
                     </Grid>
                 </Container>
