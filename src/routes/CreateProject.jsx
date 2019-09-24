@@ -8,7 +8,7 @@ import theme from '../modules/theme';
 import PasswordField from '../components/PasswordField';
 import Header from '../components/Header';
 import TitleOnlyHeader from '../components/TitleOnlyHeader';
-import { loadProjects } from '../actions';
+import { loadProjects, setNewProjectTitle, addNewProjectMilestone, setNewProjectMilestoneName, setNewProjectMilestoneDeadline, addNewProjectMember, deleteNewProjectMilestone, submitNewProject } from '../actions';
 import AccountIcon from '@material-ui/icons/AccountCircle';
 import Person from '@material-ui/icons/Person';
 import People from '@material-ui/icons/People';
@@ -38,57 +38,76 @@ const styles = {
     },
 };
 
-function CreateProject({ classes }) {
-    const milestones = [{ name: 'First', date: '2019-12-25T00:00:00.207Z' }, { name: 'Second', date: '2019-12-27T00:00:00.207Z' }]
-    const headerComponent = () =>
-        <Grid container direction='column' spacing={2}>
-            <Grid container item alignItems='center' spacing={2}>
-                <Box flexGrow={1}>
-                    <TextField
-                        variant='filled'
-                        label='Project Title'
-                        fullWidth />
-                </Box>
-                <Grid item>
-                    <Button>
-                        <Delete style={{ fontSize: '4em', color: '#DADADA' }} />
-                    </Button>
-                </Grid>
+function HeaderComponent({ classes, updateTitle, project }) {
+    return <Grid container direction='column' spacing={2}>
+        <Grid container item alignItems='center' spacing={2}>
+            <Box flexGrow={1}>
+                <TextField
+                    key='aaaaaa'
+                    variant='filled'
+                    label='Project Title'
+                    value={project.project.title}
+                    onChange={updateTitle}
+                    fullWidth />
+            </Box>
+            <Grid item>
+                <Button>
+                    <Delete style={{ fontSize: '4em', color: '#DADADA' }} />
+                </Button>
             </Grid>
-            <Grid container item direction='column'>
-                <Grid container item alignItems='center'>
-                    <Box fontSize={12}>
-                        Members
+        </Grid>
+        <Grid container item direction='column'>
+            <Grid container item alignItems='center'>
+                <Box fontSize={12}>
+                    Members
+        </Box>
+                <Grid item>
+                    <NumberCircle num={project.members.length} />
+                </Grid>
+                <Box flexGrow={1} />
+                <Box flexGrow={0.25} fontSize={12}>
+                    <Button style={{ textTransform: 'none', color: 'white', fontSize: 12 }}>
+                        Remove
+            </Button>
                 </Box>
+            </Grid>
+            <Grid container item alignItems='center' spacing={1} direction='row' style={{ overflowX: 'auto' }}>
+                <MembersList members={project.members} />
+                <Grid container item direction='column' style={{ width: 'auto' }} alignItems='center'>
                     <Grid item>
-                        <NumberCircle num={1} />
+                        <ButtonBase style={{ display: 'inline-block' }}>
+                            <AddIcon style={{ fontSize: 48 }} />
+                        </ButtonBase>
                     </Grid>
-                    <Box flexGrow={1} />
-                    <Box flexGrow={0.25} fontSize={12}>
-                        <Button style={{ textTransform: 'none', color: 'white', fontSize: 12 }}>
-                            Remove
-                    </Button>
+                    <Box fontSize={12}>
+                        <br />
                     </Box>
                 </Grid>
-                <Grid container item alignItems='center' spacing={1} direction='row' style={{ overflowX: 'auto' }}>
-                    <MembersList members={[{ name: "Fake" }, { name: "Real" }, { name: "Idk" }]} />
-                    <Grid container item direction='column' style={{ width: 'auto' }} alignItems='center'>
-                        <Grid item>
-                            <ButtonBase style={{ display: 'inline-block' }}>
-                                <AddIcon style={{ fontSize: 48 }} />
-                            </ButtonBase>
-                        </Grid>
-                        <Box fontSize={12}>
-                            <br />
-                        </Box>
-                    </Grid>
-                </Grid>
             </Grid>
-        </Grid >
+        </Grid>
+    </Grid >
 
+}
+
+function CreateProject({
+    classes,
+    updateTitle,
+    project,
+    addMilestone,
+    deleteMilestone,
+    setMilestoneName,
+    setMilestoneDeadline,
+    user,
+    addMember,
+    submitProject, }) {
+    useEffect(() => {
+        if (project.members.length == 0) {
+            addMember(user.displayName, user.email);
+        }
+    }, [])
     return (
         <>
-            <Header contentComponent={headerComponent} backPath={'/projects'} height='16em' color={theme.palette.primary[700]} />
+            <Header contentComponent={HeaderComponent} backPath={'/projects'} height='16em' color={theme.palette.primary[700]} headerProps={{ classes, updateTitle, project }} />
             <Paper className={classes.paperRoot}>
                 <Container maxWidth='sm' style={{ display: 'flex', justifyContent: 'center' }}>
                     <Grid container direction='column' spacing={3} style={{ width: '95%' }}>
@@ -96,24 +115,25 @@ function CreateProject({ classes }) {
                             <Grid container item spacing={1} style={{ width: '85%' }} alignItems='center'>
                                 <Box fontWeight={500} fontSize='16px'>
                                     Hard Deadlines
-                        </Box>
+                            </Box>
                                 <Grid item>
-                                    <NumberCircle num={milestones.length} />
+                                    <NumberCircle num={project.milestones.length} />
                                 </Grid>
                             </Grid>
                             <Grid item>
-                                <ButtonBase>
+                                <ButtonBase onClick={addMilestone}>
                                     <AddIcon style={{ fontSize: '2.5em' }} />
                                 </ButtonBase>
                             </Grid>
                         </Grid>
-                        {milestones.map((milestone, index) => (
+                        {project.milestones.map((milestone, index) => (
                             <Grid container item spacing={2} style={{ background: index % 2 ? '#F2F2F2' : 'white' }}>
                                 <Grid container item direction='column' spacing={1} style={{ width: '85%' }}>
                                     <Grid item>
                                         <TextField variant='outlined'
                                             label={'Hard Deadline ' + (index + 1)}
                                             value={milestone.name || ''}
+                                            onChange={event => setMilestoneName(index, event)}
                                             fullWidth />
                                     </Grid>
                                     <Grid item>
@@ -121,11 +141,12 @@ function CreateProject({ classes }) {
                                             label='Date'
                                             type='date'
                                             value={milestone.date}
+                                            onChange={event => setMilestoneDeadline(index, event)}
                                             fullWidth />
                                     </Grid>
                                 </Grid>
                                 <Grid item>
-                                    <ButtonBase>
+                                    <ButtonBase onClick={() => deleteMilestone(index)}>
                                         <Delete style={{ fontSize: '2.5em' }} />
                                     </ButtonBase>
                                 </Grid>
@@ -141,7 +162,7 @@ function CreateProject({ classes }) {
                                 </ButtonBase>
                             </Grid>
                             <Grid item>
-                                <ButtonBase>
+                                <ButtonBase onClick={submitProject}>
                                     <Box className={classes.doneButton}>
                                         Done!
                                 </Box>
@@ -162,8 +183,22 @@ CreateProject.propTypes = {
 
 function mapStateToProps(state) {
     return {
-        projects: state.projects.projects,
+        project: state.projects.createProject,
+        user: state.user,
     };
 }
 
-export default connect(mapStateToProps)(withStyles(styles)(CreateProject));
+const mapDispatchToProps = dispatch => {
+    return {
+        // dispatching plain actions
+        updateTitle: (event) => dispatch(setNewProjectTitle(event.target.value)),
+        addMilestone: () => dispatch(addNewProjectMilestone()),
+        deleteMilestone: (index) => dispatch(deleteNewProjectMilestone(index)),
+        setMilestoneName: (index, event) => dispatch(setNewProjectMilestoneName(index, event.target.value)),
+        setMilestoneDeadline: (index, event) => dispatch(setNewProjectMilestoneDeadline(index, event.target.value)),
+        addMember: (name, email) => dispatch(addNewProjectMember(name, email)),
+        submitProject: () => dispatch(submitNewProject()),
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(CreateProject));

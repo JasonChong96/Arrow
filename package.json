@@ -1,14 +1,14 @@
 {
-  "name": "BzBee",
+  "name": "Arrow",
   "description": "Project management",
   "version": "2019.7.1",
   "author": "Gil Barbara <gilbarbara@gmail.com>",
-  "homepage": "https://JasonChong96.github.io/BzBee",
+  "homepage": "https://JasonChong96.github.io/Arrow",
   "repository": {
     "type": "git",
-    "url": "https://github.com/JasonChong96/BzBee"
+    "url": "https://github.com/JasonChong96/Arrow"
   },
-  "bugs": "https://github.com/JasonChong96/BzBee",
+  "bugs": "https://github.com/JasonChong96/Arrow",
   "license": "MIT",
   "keywords": [
     "React",

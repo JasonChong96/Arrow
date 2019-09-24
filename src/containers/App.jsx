@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { hot } from 'react-hot-loader/root';
 import { connect } from 'react-redux';
-import { HashRouter, Switch, Route } from 'react-router-dom';
+import { Router, Switch, Route } from 'react-router-dom';
 import Helmet from 'react-helmet';
 import styled, { css, ThemeProvider } from 'styled-components';
 import treeChanges from 'tree-changes';
@@ -44,16 +44,8 @@ const AppWrapper = styled.div`
   transition: opacity 0.5s;
 `;
 
-const MainPrivate = ({ isAuthenticated }) =>
-  isAuthenticated &&
-  css`
-    padding: ${utils.px(headerHeight)} 0 0;
-  `;
-
 const Main = styled.main`
   min-height: 100vh;
-
-  ${MainPrivate};
 `;
 
 const styles = {
@@ -131,7 +123,7 @@ export class App extends React.Component {
   render() {
     const { dispatch, user, classes } = this.props;
     return (
-      <HashRouter history={history} basename='/'>
+      <Router history={history} basename='/'>
         <ThemeProvider theme={createMuiTheme(theme)}>
           <AppWrapper logged={user.isAuthenticated}>
             <Helmet
@@ -142,7 +134,7 @@ export class App extends React.Component {
               titleTemplate={`%s | ${config.name}`}
               titleAttributes={{ itemprop: 'name', lang: 'pt-br' }}
             />
-            {user.isAuthenticated && <Header dispatch={dispatch} user={user} />}
+            {/* {user.isAuthenticated && <Header dispatch={dispatch} user={user} />} */}
             {/* <Head /> */}
             <ToastContainer autoClose={3000} hideProgressBar />
             <Main isAuthenticated={user.isAuthenticated} className={classes.main}>
@@ -159,7 +151,7 @@ export class App extends React.Component {
             <GlobalStyles />
           </AppWrapper>
         </ThemeProvider>
-      </HashRouter>
+      </Router>
     );
   }
 }

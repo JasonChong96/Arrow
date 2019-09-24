@@ -3,12 +3,21 @@
  * @desc Projects
  */
 
-import { all, delay, put, takeLatest } from 'redux-saga/effects';
+import { all, delay, put, takeLatest, select } from 'redux-saga/effects';
 import { request } from 'modules/client';
-
+import axios from 'axios';
 import { ActionTypes } from 'constants/index';
 import SelectInput from '@material-ui/core/Select/SelectInput';
-import { setProjects } from '../actions';
+import { setProjectOverviews } from '../actions';
+import { toast } from 'react-toastify';
+import { cloneDeep } from 'lodash';
+import { push } from 'modules/history';
+
+const arrowAxios = axios.create({
+    baseURL: 'https://bzbee.herokuapp.com/',
+    timeout: 2000,
+});
+
 
 /**
  * Get Repos
@@ -17,45 +26,68 @@ import { setProjects } from '../actions';
  *
  */
 export function* loadProjects() {
-    yield delay(1000);
+    const token = yield select((state) => state.user.token);
+    var projects;
+    yield arrowAxios
+        .get('/projects', {
+            headers: {
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            },
+        })
+        .then(function (response) {
+            projects = response.data
+        })
+        .catch(function (error) {
+            var errorMsg = 'Unable to connect to server'
+            if (error.response) {
+                errorMsg = error.response.data.error;
+            }
+            toast.error(errorMsg, { position: toast.POSITION.TOP_RIGHT });
+        });
 
-    yield put(setProjects([
-        {
-            "project": {
-                "code": "G0pQi7",
-                "title": "CS3216 Assignment 3",
-                "deadline": "2019-12-25T00:00:00.207Z"
+
+    if (yield typeof projects != 'undefined') {
+        yield put(setProjectOverviews(projects))
+    }
+}
+
+export function* submitProject() {
+    const token = yield select((state) => state.user.token);
+    const project = yield select((state) => state.projects.createProject);
+    var proj = cloneDeep(project)
+    proj.milestones.forEach(milestone => {
+        milestone.deadline = new Date(milestone.deadline).toISOString();
+    })
+    var success = false;
+    yield arrowAxios
+        .post('/projects', proj, {
+            headers: {
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
             },
-            "upcoming_milestone": {
-                "name": "Final week",
-                "deadline": "2019-12-25T00:00:00.207Z"
-            },
-            "personal_todos": 7,
-            "team_todos": 21,
-            "personal_overdue": false,
-            "team_overdue": false
-        },
-        {
-            "project": {
-                "code": "G0pQi8",
-                "title": "FakeProject",
-                "deadline": "2019-12-25T00:00:00.207Z"
-            },
-            "upcoming_milestone": {
-                "name": "Draft 20",
-                "deadline": "2019-12-24T00:00:00.207Z"
-            },
-            "personal_todos": 7,
-            "team_todos": 21,
-            "personal_overdue": true,
-            "team_overdue": true,
-        },
-    ]));
+        })
+        .then(function (response) {
+            success = true;
+        })
+        .catch(function (error) {
+            var errorMsg = 'Unable to connect to server'
+            if (error.response) {
+                errorMsg = error.response.data.error;
+            }
+            toast.error(errorMsg, { position: toast.POSITION.TOP_RIGHT });
+        });
+    if (yield success) {
+        push('/projects');
+    }
 }
 
 /**
  * GitHub Sagas
  */
 export default function* root() {
-    yield all([takeLatest(ActionTypes.LOAD_PROJECTS, loadProjects)]);
+    yield all([takeLatest(ActionTypes.LOAD_PROJECTS, loadProjects),
+    takeLatest(ActionTypes.SUBMIT_NEW_PROJECT, submitProject)]);
 }

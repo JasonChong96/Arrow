@@ -27,7 +27,16 @@ export const ActionTypes = keyMirror({
   SHOW_ALERT: undefined,
   HIDE_ALERT: undefined,
   LOAD_PROJECTS: undefined,
-  SET_PROJECTS: undefined,
+  SET_PROJECTS_OVERVIEWS: undefined,
+  SET_NEW_PROJECT_TITLE: undefined,
+  SET_NEW_PROJECT_MILESTONE_NAME: undefined,
+  SET_NEW_PROJECT_MILESTONE_DEADLINE: undefined,
+  ADD_NEW_PROJECT_MILESTONE: undefined,
+  DELETE_NEW_PROJECT_MILESTONE: undefined,
+  ADD_NEW_PROJECT_MEMBER: undefined,
+  RESET_NEW_PROJECT: undefined,
+  SUBMIT_NEW_PROJECT: undefined,
+  DELETE_PROJECT: undefined,
 });
 
 /**

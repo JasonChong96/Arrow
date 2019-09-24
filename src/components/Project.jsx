@@ -46,7 +46,7 @@ function Project({ classes, title, daysLeft, milestoneLabel, tasksLeft, overdue,
                         {daysLeft} days till
                             </Grid>
                     <Grid item>
-                        <Chip label="Draft 1" className={classes.chipMilestone} />
+                        <Chip label={milestoneLabel} className={classes.chipMilestone} />
                     </Grid>
                 </>}
             </Grid>

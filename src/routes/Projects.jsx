@@ -56,6 +56,7 @@ const styles = {
     },
     rootGrid: {
         marginTop: '2em',
+        paddingBottom: '2em',
     },
 };
 
@@ -98,7 +99,7 @@ function Projects({ classes, dispatch, projects }) {
             <Paper className={classes.paperRoot}>
                 <Grid container spacing={1} direction='column' className={classes.rootGrid}>
                     {projects.map(project => {
-                        const daysLeft = daysTill(new Date(project.upcoming_milestone.deadline));
+                        const daysLeft = daysTill(new Date(project.upcoming_milestone.date));
                         const title = project.project.title;
                         const upcomingMilestone = project.upcoming_milestone.name;
                         const tasksLeft = showGroupTasks ? project.team_todos : project.personal_todos;
@@ -151,7 +152,7 @@ Projects.propTypes = {
 
 function mapStateToProps(state) {
     return {
-        projects: state.projects.projects,
+        projects: state.projects.projectOverviews,
     };
 }
 

@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom';
 const styles = {
 };
 
-function Header({ classes, contentComponent, backPath, color, height }) {
+function Header({ classes, contentComponent, backPath, color, height, backColor, headerProps }) {
   const Component = contentComponent;
   return (
     <AppBar className={classes.titleBar} position="relative" style={{
@@ -21,11 +21,11 @@ function Header({ classes, contentComponent, backPath, color, height }) {
           <Grid container item spacing={2}>
             {backPath && <Grid item>
               <Link to={backPath}>
-                <Arrow fontSize="large" style={{ color: '#333333', marginTop: '1rem' }} />
+                <Arrow fontSize="large" style={{ color: backColor, marginTop: '1rem' }} />
               </Link>
             </Grid>}
             <Grid item style={{ flexGrow: 1 }}>
-              <Component />
+              <Component {...headerProps} />
             </Grid>
           </Grid>
         </Grid>
@@ -40,11 +40,13 @@ Header.propTypes = {
   backPath: PropTypes.string.isRequired,
   color: PropTypes.string.isRequired,
   height: PropTypes.string.isRequired,
+  backColor: PropTypes.string.isRequired,
 };
 
 Header.defaultProps = {
   color: theme.palette.appBar,
   height: '8em',
+  backColor: '#333333'
 }
 
 export default withStyles(styles)(Header);

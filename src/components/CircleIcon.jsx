@@ -10,23 +10,24 @@ const styles = {
     },
 
     root: {
-        padding: '1px',
         display: "flex",
         alignItems: "center",
         flexDirection: "column",
         justifyItems: "start",
         borderRadius: "50%",
-        width: 16,
-        height: 16,
     },
 }
 
-function CircleIcon({ classes, Icon }) {
+function CircleIcon({ classes, Icon, length, color, iconColor, opacity, padding }) {
     return <div className={classes.root} style={{
-        backgroundColor: theme.palette.primary[500],
+        backgroundColor: color,
         color: 'white',
+        height: length,
+        width: length,
+        opacity: opacity,
+        padding: padding,
     }}>
-        <Icon />
+        <Icon style={{ color: iconColor }} />
     </div>
 }
 
@@ -34,6 +35,13 @@ CircleIcon.propTypes = {
     tasksLeft: PropTypes.number.isRequired,
     overdue: PropTypes.bool.isRequired,
     classes: PropTypes.object.isRequired,
+}
+
+CircleIcon.defaultProps = {
+    length: 16,
+    color: theme.palette.primary[500],
+    opacity: 1,
+    padding: 1,
 }
 
 export default withStyles(styles)(CircleIcon);

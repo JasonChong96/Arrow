@@ -85,8 +85,10 @@ function ProjectDetails({ classes, entry, renderMonth }) {
             <Grid container item style={{ width: 'auto' }} direction='column' alignItems='center'>
                 <Box flexGrow={entry.isMilestone ? 1 : 0.2} width={0} border='1px solid #DADADA' background='#DADADA' marginTop='-0.25em' />
                 <Box padding='0.25em 0.25em 0.25em 0.25em' />
-                {!entry.completed ? <CircleOutlined color={isOverdue ? red[500] : '#DADADA'} />
-                    : <CircleIcon Icon={TickIcon} />}
+                <ButtonBase>
+                    {!entry.completed ? <CircleOutlined color={isOverdue ? red[500] : '#DADADA'} />
+                        : <CircleIcon Icon={TickIcon} />}
+                </ButtonBase>
                 <Box padding='0.25em 0.25em 0.25em 0.25em' />
                 <Box flexGrow={1} width={0} border='1px solid #DADADA' background='#DADADA' marginBottom='-0.25em' />
             </Grid>
