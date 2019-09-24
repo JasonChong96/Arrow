@@ -89,7 +89,12 @@ const routes = {
     isPublic: true,
     exact: true,
   },
-  '/project/:code/task/:taskid': {
+  '/project/:code/edit': {
+    component: CreateProject,
+    isPublic: true,
+    exact: true,
+  },
+  '/project/:code/createtask': {
     component: EditTask,
     isPublic: true,
     exact: true,

@@ -27,7 +27,7 @@ export const ActionTypes = keyMirror({
   SHOW_ALERT: undefined,
   HIDE_ALERT: undefined,
   LOAD_PROJECTS: undefined,
-  SET_PROJECTS_OVERVIEWS: undefined,
+  SET_PROJECT_OVERVIEWS: undefined,
   SET_NEW_PROJECT_TITLE: undefined,
   SET_NEW_PROJECT_MILESTONE_NAME: undefined,
   SET_NEW_PROJECT_MILESTONE_DEADLINE: undefined,
@@ -37,6 +37,10 @@ export const ActionTypes = keyMirror({
   RESET_NEW_PROJECT: undefined,
   SUBMIT_NEW_PROJECT: undefined,
   DELETE_PROJECT: undefined,
+  LOAD_PROJECT_FOR_EDIT: undefined,
+  LOAD_PROJECT: undefined,
+  SET_PROJECT: undefined,
+  PATCH_PROJECT: undefined,
 });
 
 /**

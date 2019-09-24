@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { withStyles, Grid, Button, Typography, Container, Paper, Box, Chip, Switch, TextField, ButtonBase } from '@material-ui/core';
+import { withStyles, Grid, Button, Typography, Container, Paper, Box, Chip, Switch, TextField, ButtonBase, Dialog, DialogTitle, DialogContent, DialogActions } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -8,7 +8,7 @@ import theme from '../modules/theme';
 import PasswordField from '../components/PasswordField';
 import Header from '../components/Header';
 import TitleOnlyHeader from '../components/TitleOnlyHeader';
-import { loadProjects, setNewProjectTitle, addNewProjectMilestone, setNewProjectMilestoneName, setNewProjectMilestoneDeadline, addNewProjectMember, deleteNewProjectMilestone, submitNewProject } from '../actions';
+import { loadProjects, setNewProjectTitle, addNewProjectMilestone, setNewProjectMilestoneName, setNewProjectMilestoneDeadline, addNewProjectMember, deleteNewProjectMilestone, submitNewProject, loadProjectForEdit, deleteProject, loadProject, resetNewProject, patchProject } from '../actions';
 import AccountIcon from '@material-ui/icons/AccountCircle';
 import Person from '@material-ui/icons/Person';
 import People from '@material-ui/icons/People';
@@ -18,6 +18,8 @@ import { Link } from 'react-router-dom';
 import Delete from '@material-ui/icons/DeleteOutlined';
 import NumberCircle from '../components/NumberCircle';
 import MembersList from '../components/MembersList';
+import { push } from '../modules/history';
+import Loader from '../components/Loader';
 
 const styles = {
     paperRoot: {
@@ -38,7 +40,7 @@ const styles = {
     },
 };
 
-function HeaderComponent({ classes, updateTitle, project }) {
+function HeaderComponent({ classes, updateTitle, project, onClickDelete }) {
     return <Grid container direction='column' spacing={2}>
         <Grid container item alignItems='center' spacing={2}>
             <Box flexGrow={1}>
@@ -51,7 +53,7 @@ function HeaderComponent({ classes, updateTitle, project }) {
                     fullWidth />
             </Box>
             <Grid item>
-                <Button>
+                <Button onClick={onClickDelete}>
                     <Delete style={{ fontSize: '4em', color: '#DADADA' }} />
                 </Button>
             </Grid>
@@ -99,15 +101,33 @@ function CreateProject({
     setMilestoneDeadline,
     user,
     addMember,
-    submitProject, }) {
+    submitProject,
+    patchProject,
+    loadProjectForEdit,
+    deleteProject,
+    projects,
+    loadProject,
+    resetProject,
+    match: { params: { code } }, }) {
     useEffect(() => {
-        if (project.members.length == 0) {
+        if (code) {
+            if (projects[code]) {
+                loadProjectForEdit(code);
+            } else {
+                loadProject(code);
+            }
+        } else {
+            resetProject()
             addMember(user.displayName, user.email);
         }
-    }, [])
+    }, [projects[code]])
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    if (code && !projects[code]) {
+        return <Loader />
+    }
     return (
         <>
-            <Header contentComponent={HeaderComponent} backPath={'/projects'} height='16em' color={theme.palette.primary[700]} headerProps={{ classes, updateTitle, project }} />
+            <Header contentComponent={HeaderComponent} backPath={'/projects'} height='16em' color={theme.palette.primary[700]} headerProps={{ classes, updateTitle, project, onClickDelete: () => setDeleteDialogOpen(true) }} />
             <Paper className={classes.paperRoot}>
                 <Container maxWidth='sm' style={{ display: 'flex', justifyContent: 'center' }}>
                     <Grid container direction='column' spacing={3} style={{ width: '95%' }}>
@@ -162,7 +182,7 @@ function CreateProject({
                                 </ButtonBase>
                             </Grid>
                             <Grid item>
-                                <ButtonBase onClick={submitProject}>
+                                <ButtonBase onClick={() => code ? patchProject() : submitProject()}>
                                     <Box className={classes.doneButton}>
                                         Done!
                                 </Box>
@@ -172,6 +192,32 @@ function CreateProject({
                     </Grid>
                 </Container>
             </Paper>
+            <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+                <DialogTitle>
+                    Delete Project?
+                </DialogTitle>
+                <DialogContent>
+                    Are you sure you want to PERMANENTLY delete this project, along with its tasks and subtasks?
+                    <br />
+                    <br />
+                    This action is IRREVERSIBLE.
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setDeleteDialogOpen(false)}>
+                        No, Go back
+                    </Button>
+                    <Button onClick={() => {
+                        setDeleteDialogOpen(false);
+                        if (code) {
+                            deleteProject(code);
+                        } else {
+                            push('/projects');
+                        }
+                    }}>
+                        Yes, Delete Project
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </>
     );
 }
@@ -185,12 +231,12 @@ function mapStateToProps(state) {
     return {
         project: state.projects.createProject,
         user: state.user,
+        projects: state.projects.projects,
     };
 }
 
 const mapDispatchToProps = dispatch => {
     return {
-        // dispatching plain actions
         updateTitle: (event) => dispatch(setNewProjectTitle(event.target.value)),
         addMilestone: () => dispatch(addNewProjectMilestone()),
         deleteMilestone: (index) => dispatch(deleteNewProjectMilestone(index)),
@@ -198,6 +244,11 @@ const mapDispatchToProps = dispatch => {
         setMilestoneDeadline: (index, event) => dispatch(setNewProjectMilestoneDeadline(index, event.target.value)),
         addMember: (name, email) => dispatch(addNewProjectMember(name, email)),
         submitProject: () => dispatch(submitNewProject()),
+        loadProjectForEdit: (code) => dispatch(loadProjectForEdit(code)),
+        deleteProject: (code) => dispatch(deleteProject(code)),
+        loadProject: code => dispatch(loadProject(code)),
+        resetProject: code => dispatch(resetNewProject()),
+        patchProject: code => dispatch(patchProject()),
     }
 }
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { withStyles, Grid, Button, Typography, Container, Paper, Box, Chip, Switch, TextField, ButtonBase, Card, CardContent } from '@material-ui/core';
+import { withStyles, Grid, Button, Typography, Container, Paper, Box, Chip, Switch, TextField, ButtonBase, Card, CardContent, DialogTitle, DialogActions, Dialog } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -8,7 +8,7 @@ import theme from '../modules/theme';
 import PasswordField from '../components/PasswordField';
 import Header from '../components/Header';
 import TitleOnlyHeader from '../components/TitleOnlyHeader';
-import { loadProjects } from '../actions';
+import { loadProjects, loadProject } from '../actions';
 import AccountIcon from '@material-ui/icons/AccountCircle';
 import Person from '@material-ui/icons/Person';
 import People from '@material-ui/icons/People';
@@ -25,7 +25,9 @@ import MembersList from '../components/MembersList';
 import red from '@material-ui/core/colors/red';
 import CircleIcon from '../components/CircleIcon';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import ArrowRightIcon from '@material-ui/icons/ArrowForwardIos';
 import ProjectEntry from '../components/ProjectEntry';
+import Loader from '../components/Loader';
 
 const styles = {
     chipMilestone: {
@@ -63,64 +65,14 @@ function daysTill(date2) {
     return Math.floor(daysDiff);
 }
 
-const project = {
-    "project": {
-        "code": "G0pQi7",
-        "title": "CS3216 Assignment 3",
-        "deadline": new Date("2019-12-25T00:00:00.207Z")
-    },
-    "milestones": [
-        {
-            "name": "Final week",
-            "date": new Date("2019-12-25T00:00:00.207Z")
-        }
-    ],
-    "members": [
-        {
-            "email": "johnsmith@gmail.com",
-            "name": "John Smith"
-        }
-    ],
-    "tasks": [
-        {
-            "id": "pH1qRj8",
-            "title": "Submit assignment 3",
-            "description": "Progressive web app",
-            "color": "#ff0000",
-            "deadline": new Date("2020-01-29T00:00:00.207Z"),
-            "completed": true,
-            "assignees": [
-                {
-                    "email": "johnsmith@gmail.com",
-                    "name": "John Smith"
-                }
-            ],
-            "milestones": [
-                {
-                    "name": "Final week",
-                    "date": new Date("2019-12-31T00:00:00.207Z")
-                }
-            ],
-            "subtasks": [
-                {
-                    "id": "qI2rSk9",
-                    "title": "Write API documentation",
-                    "description": "Use Apiary",
-                    "deadline": new Date("2019-12-24T00:00:00.207Z"),
-                    "completed": false,
-                    "assignees": [
-                        {
-                            "email": "johnsmith@gmail.com",
-                            "name": "John Smith"
-                        }
-                    ]
-                }
-            ]
-        }
-    ]
-}
-
-function ProjectDetails({ classes, match: { params: { code } } }) {
+function ProjectDetails({ classes, loadProject, projects, match: { params: { code } } }) {
+    useEffect(() => {
+        loadProject(code);
+    }, [])
+    const project = projects[code]
+    if (!project) {
+        return <Loader />
+    }
     var subTasks = [];
     project.tasks.forEach(task => {
         task.subtasks.forEach(subtask => {
@@ -146,9 +98,11 @@ function ProjectDetails({ classes, match: { params: { code } } }) {
                     {project.project.title}
                 </Box>
                 <Box alignSelf='flex-end' color='black'>
-                    <ButtonBase>
-                        <EditIcon style={{ fontSize: '3em' }} />
-                    </ButtonBase>
+                    <Link to={'/project/' + code + '/edit'}>
+                        <ButtonBase>
+                            <EditIcon style={{ fontSize: '3em', color: 'black' }} />
+                        </ButtonBase>
+                    </Link>
                 </Box>
             </Grid>
             <Grid container item alignItems='center'>
@@ -170,8 +124,13 @@ function ProjectDetails({ classes, match: { params: { code } } }) {
                 <Container maxWidth='sm' style={{ paddingBottom: '2em' }}>
                     <Grid container direction='column' spacing={1}>
                         <Grid container item alignItems='center'>
-                            <Grid item>
+                            <Grid item style={{ width: '85%' }}>
                                 <RemainingTasksCircle tasksLeft={4} overdue={false} />
+                            </Grid>
+                            <Grid item>
+                                <ButtonBase>
+                                    <AddIcon style={{ color: theme.palette.primary[500], fontSize: '3em' }} />
+                                </ButtonBase>
                             </Grid>
                         </Grid>
                         {allTasksAndSubtasks.map(entry => {
@@ -181,7 +140,48 @@ function ProjectDetails({ classes, match: { params: { code } } }) {
                             return <ProjectEntry entry={entry} renderMonth={renderMonth} />
                         })}
                     </Grid>
+                    <Dialog open maxWidth='xs' fullWidth>
+                        <DialogTitle>Add</DialogTitle>
+                        <DialogActions>
+                            <Grid container direction='column' spacing={1}>
+                                <Grid item style={{ width: '100%', }}>
+                                    <Link to={'/project/' + code + '/createtask'} style={{ width: '100%' }}>
+                                        <ButtonBase style={{ width: '100%' }}>
+                                            <Grid container item alignItems='center' justify='center' spacing={1} style={{ color: 'black', fontSize: '1.25em' }}>
+                                                <Grid item style={{ width: '85%', textAlign: 'start' }}>
+                                                    Task
+                                    </Grid>
+                                                <Grid item>
+                                                    <ArrowRightIcon />
+                                                </Grid>
+                                            </Grid>
+                                        </ButtonBase>
+                                    </Link>
+                                </Grid>
+                                <Grid item>
+                                    <hr style={{
+                                        border: '0.5px solid #F2F2F2',
+                                        height: '0.5px',
+                                        width: '90%',
+                                    }} />
+                                </Grid>
+                                <Grid item>
+                                    <ButtonBase style={{ width: '100%' }}>
+                                        <Grid container item alignItems='center' justify='center' spacing={1} style={{ color: 'black', fontSize: '1.25em' }}>
+                                            <Grid item style={{ width: '85%', textAlign: 'start' }}>
+                                                Sub-Task
+                                    </Grid>
+                                            <Grid item>
+                                                <ArrowRightIcon />
+                                            </Grid>
+                                        </Grid>
+                                    </ButtonBase>
+                                </Grid>
+                            </Grid>
+                        </DialogActions>
+                    </Dialog>
                 </Container>
+
             </Paper>
         </>
     );
@@ -198,4 +198,10 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(withStyles(styles)(ProjectDetails));
+function mapDispatchToProps(dispatch) {
+    return {
+        loadProject: code => dispatch(loadProject(code)),
+    };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(ProjectDetails));

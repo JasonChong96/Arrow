@@ -70,6 +70,9 @@ function getColorScheme(taskColor) {
 }
 
 function getHeaderColor(task) {
+    if (!task) {
+        return '#333333'
+    }
     var colorScheme = getColorScheme(task.color);
     return colorScheme ? colorScheme[700] : '#333333';
 }

@@ -42,9 +42,6 @@ export function* login({ payload }) {
       toast.error(errorMsg, { position: toast.POSITION.TOP_RIGHT });
     });
   if (yield token) {
-    // TODO: TEMPORARY UNTIL BACKEND IS UPDATED
-    realEmail = 'twmtdw@gmail.com'
-    displayName = 'TW MTDW'
     yield put(setUserInfo(token, realEmail, displayName));
     yield put({
       type: ActionTypes.USER_LOGIN_SUCCESS,

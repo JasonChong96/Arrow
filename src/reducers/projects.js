@@ -1,6 +1,7 @@
 import { handleActions } from 'redux-actions';
 import immutable from 'immutability-helper';
 import { REHYDRATE } from 'redux-persist/lib/constants';
+import { cloneDeep } from 'lodash';
 
 import { ActionTypes } from 'constants/index';
 
@@ -21,7 +22,7 @@ export const projectsState = {
 export default {
     projects: handleActions(
         {
-            [ActionTypes.SET_PROJECTS_OVERVIEWS]: (state, { payload: { projects } }) => {
+            [ActionTypes.SET_PROJECT_OVERVIEWS]: (state, { payload: { projects } }) => {
                 return immutable(state, {
                     projectOverviews: { $set: projects },
                 });
@@ -43,7 +44,7 @@ export default {
                         milestones: {
                             $push: [{
                                 name: '',
-                                deadline: new Date().toISOString().substring(0, 10),
+                                date: new Date().toISOString().substring(0, 10),
                             }]
                         }
                     },
@@ -76,7 +77,7 @@ export default {
                     createProject: {
                         milestones: {
                             [index]: {
-                                deadline: {
+                                date: {
                                     $set: deadline,
                                 },
                             },
@@ -105,6 +106,31 @@ export default {
                             },
                             milestones: [],
                             members: [],
+                        }
+                    },
+                });
+            },
+            [ActionTypes.LOAD_PROJECT_FOR_EDIT]: (state, { payload: { code } }) => {
+                var projectInfo = state.projects[code];
+                return immutable(state, {
+                    createProject: {
+                        $set: cloneDeep({
+                            project: projectInfo.project,
+                            milestones: projectInfo.milestones.map(milestone => ({
+                                name: milestone.name,
+                                date: milestone.date.toISOString().substring(0, 10),
+                                id: milestone.id,
+                            })),
+                            members: projectInfo.members,
+                        })
+                    },
+                });
+            },
+            [ActionTypes.SET_PROJECT]: (state, { payload: { project } }) => {
+                return immutable(state, {
+                    projects: {
+                        [project.project.code]: {
+                            $set: project
                         }
                     },
                 });

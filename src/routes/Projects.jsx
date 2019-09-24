@@ -99,9 +99,9 @@ function Projects({ classes, dispatch, projects }) {
             <Paper className={classes.paperRoot}>
                 <Grid container spacing={1} direction='column' className={classes.rootGrid}>
                     {projects.map(project => {
-                        const daysLeft = daysTill(new Date(project.upcoming_milestone.date));
+                        const daysLeft = project.upcoming_milestone ? daysTill(new Date(project.upcoming_milestone.date)) : 0;
                         const title = project.project.title;
-                        const upcomingMilestone = project.upcoming_milestone.name;
+                        const upcomingMilestone = project.upcoming_milestone ? project.upcoming_milestone.name : null;
                         const tasksLeft = showGroupTasks ? project.team_todos : project.personal_todos;
                         const isOverdue = showGroupTasks ? project.team_overdue : project.personal_overdue;
                         const code = project.project.code;
