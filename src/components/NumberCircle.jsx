@@ -22,9 +22,9 @@ const styles = {
     },
 }
 
-function NumberCircle({ classes, num }) {
+function NumberCircle({ classes, num, color }) {
     return <div className={classes.root} style={{
-        backgroundColor: theme.palette.primary[200],
+        backgroundColor: color,
         color: 'black',
     }}>
         <Grid item >
@@ -39,6 +39,10 @@ NumberCircle.propTypes = {
     tasksLeft: PropTypes.number.isRequired,
     overdue: PropTypes.bool.isRequired,
     classes: PropTypes.object.isRequired,
+}
+
+NumberCircle.defaultProps = {
+    color: theme.palette.primary[200]
 }
 
 export default withStyles(styles)(NumberCircle);

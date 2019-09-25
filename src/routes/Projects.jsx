@@ -17,10 +17,6 @@ import Project from '../components/Project';
 import { Link } from 'react-router-dom';
 
 
-function validateEmail(mail) {
-    return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(mail);
-}
-
 const styles = {
     formContainer: {
         display: 'flex',
@@ -62,22 +58,22 @@ const styles = {
 
 
 
-function Projects({ classes, dispatch, projects }) {
+function Projects({ classes, dispatch, projects, user }) {
     useEffect(() => {
         dispatch(loadProjects());
     }, [])
 
     const headerComponent = () =>
-        <Grid container alignItems='center' spacing={2} className={classes.headerRoot}>
+        <Grid container alignItems='center' spacing={1} className={classes.headerRoot} justify='space-around'>
             <Grid item>
                 <AccountIcon style={{ fontSize: '4em', color: '#333333' }} />
             </Grid>
-            <Grid item style={{ flexGrow: 0.8 }}>
-                <Box fontWeight={600} fontSize={24} color="black">
-                    Dead Bee
-            </Box>
+            <Grid item style={{ width: '40%' }}>
+                <Box fontWeight={600} fontSize='28px' color="black" maxWidth='100%' textOverflow='ellipsis' overflow='hidden' whiteSpace='nowrap'>
+                    {user.displayName}
+                </Box>
             </Grid>
-            <Grid item>
+            <Grid item >
                 <Grid component="label" container alignItems="center">
                     <Grid item><Person style={{ color: 'black', fontSize: '1.5em' }} /></Grid>
                     <Grid item>
@@ -153,6 +149,7 @@ Projects.propTypes = {
 function mapStateToProps(state) {
     return {
         projects: state.projects.projectOverviews,
+        user: state.user
     };
 }
 

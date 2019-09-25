@@ -10,6 +10,7 @@ import { Button, Container, Text, utils } from 'styled-minimal';
 import Background from 'components/Background';
 import Icon from 'components/Icon';
 import Logo from 'components/Logo';
+import { Redirect } from 'react-router-dom'
 
 const { spacer } = utils;
 
@@ -30,10 +31,10 @@ const Header = styled.div`
     width: auto;
 
     ${/* sc-custom '@media-query' */ utils.responsive({
-      lg: `
+  lg: `
         height: 15rem;
      `,
-    })};
+})};
   }
 `;
 
@@ -46,10 +47,10 @@ const Heading = styled.h1`
   text-align: center;
 
   ${/* sc-custom '@media-query' */ utils.responsive({
-    lg: `
+  lg: `
       font-size: 4rem;
     `,
-  })};
+})};
 `;
 
 export class Home extends React.PureComponent {
@@ -67,14 +68,7 @@ export class Home extends React.PureComponent {
   render() {
     const { user } = this.props;
     return (
-      <Background key="Home" data-testid="HomeWrapper">
-        <HomeContainer verticalPadding>
-          <Header>
-            <Logo type="logo" />
-          </Header>
-          <Heading>{config.name}</Heading>
-        </HomeContainer>
-      </Background>
+      <Redirect to='/login' />
     );
   }
 }

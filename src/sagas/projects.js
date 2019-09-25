@@ -5,6 +5,7 @@
 
 import { all, delay, put, takeLatest, select } from 'redux-saga/effects';
 import { request } from 'modules/client';
+import { convertDates } from 'modules/helpers';
 import axios from 'axios';
 import { ActionTypes } from 'constants/index';
 import SelectInput from '@material-ui/core/Select/SelectInput';
@@ -18,18 +19,18 @@ const arrowAxios = axios.create({
     timeout: 2000,
 });
 
-function checkAuth(error) {
-
+function* checkAuth(response) {
+    if (response.status == 401) {
+        yield put({
+            type: ActionTypes.USER_LOGOUT,
+        })
+    }
 }
-/**
- * Get Repos
- *
- * @param {Object} action
- *
- */
+
 export function* loadProjects() {
     const token = yield select((state) => state.user.token);
     var projects;
+    var errorResponse;
     yield arrowAxios
         .get('/projects', {
             headers: {
@@ -42,13 +43,16 @@ export function* loadProjects() {
             projects = response.data
         })
         .catch(function (error) {
-            console.log(error);
             var errorMsg = 'Unable to connect to server'
             if (error.response) {
+                errorResponse = error.response;
                 errorMsg = error.response.data.error;
             }
             toast.error(errorMsg, { position: toast.POSITION.TOP_RIGHT });
         });
+    if (errorResponse) {
+        yield checkAuth(errorResponse);
+    }
 
     if (yield typeof projects != 'undefined') {
         yield projects.forEach(convertDates);
@@ -115,6 +119,174 @@ export function* submitProject() {
     }
 }
 
+export function* submitTask({ payload: { code } }) {
+    const token = yield select((state) => state.user.token);
+    const task = cloneDeep(yield select((state) => state.projects.editTask));
+    task.milestones.forEach(milestone => {
+        milestone.date = new Date(milestone.date).toISOString();
+    })
+    task.deadline = new Date(task.deadline).toISOString();
+    const subtasks = task.subtasks
+    task.subtasks = undefined
+    var success = false;
+    yield arrowAxios
+        .post('/projects/' + code + '/tasks', task, {
+            headers: {
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            },
+        })
+        .then(function (response) {
+            success = true;
+        })
+        .catch(function (error) {
+            var errorMsg = 'Unable to connect to server'
+            if (error.response) {
+                errorMsg = error.response.data.error;
+            }
+            toast.error(errorMsg, { position: toast.POSITION.TOP_RIGHT });
+        });
+    if (yield success) {
+        push('/project/' + code);
+    }
+}
+
+export function* submitSubTask(payload) {
+    yield submitSubTaskHelper(payload, false);
+}
+
+export function* submitSubTaskAndRedirect(payload) {
+    yield submitSubTaskHelper(payload, true);
+}
+
+export function* submitSubTaskHelper({ payload: { taskid, code } }, redirect) {
+    const token = yield select((state) => state.user.token);
+    const subtask = cloneDeep(yield select((state) => state.projects.editSubTask));
+    subtask.deadline = new Date(subtask.deadline).toISOString();
+    var success = false;
+    yield arrowAxios
+        .post('/tasks/' + taskid + '/subtasks/', subtask, {
+            headers: {
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            },
+        })
+        .then(function (response) {
+            success = true;
+        })
+        .catch(function (error) {
+            var errorMsg = 'Unable to connect to server'
+            if (error.response) {
+                errorMsg = error.response.data.error;
+            }
+            toast.error(errorMsg, { position: toast.POSITION.TOP_RIGHT });
+        });
+    if (redirect) {
+        if (yield success) {
+            push('/project/' + code);
+        }
+    }
+}
+
+export function* patchSubTask(payload) {
+    yield patchSubTaskHelper(payload, false);
+}
+
+export function* patchSubTaskAndRedirect(payload) {
+    yield patchSubTaskHelper(payload, true);
+}
+
+export function* patchSubTaskHelper({ payload: { code } }, redirect) {
+    const token = yield select((state) => state.user.token);
+    const subtask = cloneDeep(yield select((state) => state.projects.editSubTask));
+    subtask.deadline = new Date(subtask.deadline).toISOString();
+    var success = false;
+    yield arrowAxios
+        .patch('/subtasks/' + subtask.id, subtask, {
+            headers: {
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            },
+        })
+        .then(function (response) {
+            success = true;
+        })
+        .catch(function (error) {
+            var errorMsg = 'Unable to connect to server'
+            if (error.response) {
+                errorMsg = error.response.data.error;
+            }
+            toast.error(errorMsg, { position: toast.POSITION.TOP_RIGHT });
+        });
+    if (redirect) {
+        if (yield success) {
+            push('/project/' + code);
+        }
+    }
+}
+
+export function* patchTask({ payload: { code } }) {
+    const token = yield select((state) => state.user.token);
+    const task = cloneDeep(yield select((state) => state.projects.editTask));
+    task.milestones.forEach(milestone => {
+        milestone.date = new Date(milestone.date).toISOString();
+    })
+    task.deadline = new Date(task.deadline).toISOString();
+    const subtasks = task.subtasks
+    task.subtasks = undefined
+    var success = false;
+    yield arrowAxios
+        .patch('/tasks/' + task.id, task, {
+            headers: {
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            },
+        })
+        .then(function (response) {
+            success = true;
+        })
+        .catch(function (error) {
+            var errorMsg = 'Unable to connect to server'
+            if (error.response) {
+                errorMsg = error.response.data.error;
+            }
+            toast.error(errorMsg, { position: toast.POSITION.TOP_RIGHT });
+        });
+    if (yield success) {
+        push('/project/' + code);
+    }
+}
+
+export function* setTaskCompletion({ payload: { id, completed, isSubTask, code } }) {
+    const token = yield select((state) => state.user.token);
+    const url = (isSubTask ? '/subtasks/' : '/tasks/') + id
+    yield arrowAxios
+        .patch(url, { completed }, {
+            headers: {
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            },
+        })
+        .catch(function (error) {
+            var errorMsg = 'Unable to connect to server'
+            if (error.response) {
+                errorMsg = error.response.data.error;
+            }
+            toast.error(errorMsg, { position: toast.POSITION.TOP_RIGHT });
+        });
+    yield put({
+        type: ActionTypes.LOAD_PROJECT,
+        payload: {
+            code,
+        },
+    });
+}
+
 export function* patchProject() {
     const token = yield select((state) => state.user.token);
     const project = yield select((state) => state.projects.createProject);
@@ -146,11 +318,11 @@ export function* patchProject() {
     }
 }
 
-export function* deleteProject({ payload: { code } }) {
+function* deleteHelper(url, redirect) {
     const token = yield select((state) => state.user.token);
     var success = false;
     yield arrowAxios
-        .delete('/projects/' + code, {
+        .delete(url, {
             headers: {
                 Authorization: 'Bearer ' + token,
                 'Content-Type': 'application/json',
@@ -167,24 +339,22 @@ export function* deleteProject({ payload: { code } }) {
             }
             toast.error(errorMsg, { position: toast.POSITION.TOP_RIGHT });
         });
-    if (yield success) {
-        push('/projects');
+    if (yield success && redirect) {
+        push(redirect);
     }
 }
 
-function convertDates(obj) {
-    if (!obj) {
-        return;
-    }
-    Object.keys(obj).forEach(key => {
-        if (typeof obj[key] === 'object') {
-            convertDates(obj[key])
-        } else if (key == 'date' || key == 'deadline') {
-            obj[key] = new Date(obj[key])
-        }
-    })
+export function* deleteProject({ payload: { code } }) {
+    yield deleteHelper('/projects/' + code, '/projects');
 }
 
+export function* deleteTask({ payload: { code, taskid } }) {
+    yield deleteHelper('/tasks/' + taskid, '/project/' + code);
+}
+
+export function* deleteSubTaskAndRedirect({ payload: { code, subtaskid } }) {
+    yield deleteHelper('/subtasks/' + subtaskid, '/project/' + code);
+}
 
 /**
  * GitHub Sagas
@@ -194,5 +364,12 @@ export default function* root() {
     takeLatest(ActionTypes.SUBMIT_NEW_PROJECT, submitProject),
     takeLatest(ActionTypes.DELETE_PROJECT, deleteProject),
     takeLatest(ActionTypes.PATCH_PROJECT, patchProject),
+    takeLatest(ActionTypes.SUBMIT_TASK, submitTask),
+    takeLatest(ActionTypes.PATCH_TASK, patchTask),
+    takeLatest(ActionTypes.DELETE_TASK, deleteTask),
+    takeLatest(ActionTypes.SET_TASK_COMPLETION, setTaskCompletion),
+    takeLatest(ActionTypes.SUBMIT_SUB_TASK_AND_REDIRECT, submitSubTaskAndRedirect),
+    takeLatest(ActionTypes.PATCH_SUB_TASK_AND_REDIRECT, patchSubTaskAndRedirect),
+    takeLatest(ActionTypes.DELETE_SUB_TASK_AND_REDIRECT, deleteSubTaskAndRedirect),
     takeLatest(ActionTypes.LOAD_PROJECT, loadProject)]);
 }

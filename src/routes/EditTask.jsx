@@ -8,7 +8,7 @@ import theme from '../modules/theme';
 import PasswordField from '../components/PasswordField';
 import Header from '../components/Header';
 import TitleOnlyHeader from '../components/TitleOnlyHeader';
-import { loadProjects } from '../actions';
+import { loadProjects, resetEditTask, loadProject, loadTaskForEdit, setTaskDeadline, setTaskColor, setTaskTitle, setTaskAssignees, setTaskMilestones, addSubTask, setSubTaskTitle, setSubTaskDeadline, setSubTaskDescription, setSubTaskAssignees, deleteSubTask, setTaskDescription, submitTask, patchTask, deleteTask } from '../actions';
 import AccountIcon from '@material-ui/icons/AccountCircle';
 import Person from '@material-ui/icons/Person';
 import People from '@material-ui/icons/People';
@@ -18,13 +18,16 @@ import { Link } from 'react-router-dom';
 import Delete from '@material-ui/icons/DeleteOutlined';
 import NumberCircle from '../components/NumberCircle';
 import MembersList from '../components/MembersList';
-import { green, teal, indigo, blue, deepPurple, purple } from '@material-ui/core/colors';
+import { green, teal, indigo, blue, deepPurple, purple, grey } from '@material-ui/core/colors';
 import TickIcon from '@material-ui/icons/Done';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import SubTaskEdit from '../components/SubTaskEdit';
 import SelectMembers from '../components/SelectMembers';
 import WhiteLabelTextField from '../components/WhiteLabelTextField';
+import Loader from '../components/Loader';
+import SelectMilestones from '../components/SelectMilestones';
+import { push } from '../modules/history';
 
 const styles = {
     paperRoot: {
@@ -37,17 +40,10 @@ const styles = {
         boxShadow: '0px -1px 5px rgba(0, 0, 0, 0.2), 0px -2px 5px rgba(0, 0, 0, 0.12), 0px 0px 5px rgba(0, 0, 0, 0.14)',
     },
     doneButton: {
-        background: theme.palette.primary[500],
         borderRadius: '200px',
         color: 'white',
         textTransform: 'none',
         padding: '0.5em 1em 0.5em 1em'
-    },
-    chipMilestone: {
-        background: theme.palette.primary[700],
-        color: theme.palette.primary[50],
-        borderRadius: '16px',
-        fontSize: '14px',
     },
     colorOption: {
         height: '2.55em',
@@ -60,7 +56,7 @@ const styles = {
 };
 
 const colors = [
-    teal, green, indigo, blue, deepPurple, purple
+    teal, green, indigo, blue, deepPurple, purple, grey
 ]
 
 const taskColors = colors.map(color => color[500]);
@@ -74,147 +70,167 @@ function getHeaderColor(task) {
         return '#333333'
     }
     var colorScheme = getColorScheme(task.color);
+    if (colorScheme == grey) {
+        return '#333333';
+    }
     return colorScheme ? colorScheme[700] : '#333333';
 }
 
-const project = {
-    "project": {
-        "code": "G0pQi7",
-        "title": "CS3216 Assignment 3",
-        "deadline": new Date("2019-12-25T00:00:00.207Z")
-    },
-    "milestones": [
-        {
-            "name": "Final week",
-            "date": new Date("2019-12-25T00:00:00.207Z")
-        }
-    ],
-    "members": [
-        {
-            "email": "johnsmith@gmail.com",
-            "name": "John Smith"
-        },
-        {
-            "email": "fsmith@gmail.com",
-            "name": "Fake Smith"
-        }
-    ],
-    "tasks": [
-        {
-            "id": "pH1qRj8",
-            "title": "Submit assignment 3",
-            "description": "Progressive web app",
-            "color": "#ff0000",
-            "deadline": new Date("2020-01-29T00:00:00.207Z"),
-            "completed": true,
-            "assignees": [
-                {
-                    "email": "johnsmith@gmail.com",
-                    "name": "John Smith"
-                }
-            ],
-            "milestones": [
-                {
-                    "name": "Final week",
-                    "date": new Date("2019-12-31T00:00:00.207Z")
-                }
-            ],
-            "subtasks": [
-                {
-                    "id": "qI2rSk9",
-                    "title": "Write API documentation",
-                    "description": "Use Apiary",
-                    "deadline": new Date("2019-12-24T00:00:00.207Z"),
-                    "completed": false,
-                    "assignees": [
-                        {
-                            "email": "johnsmith@gmail.com",
-                            "name": "John Smith"
-                        }
-                    ]
-                }
-            ]
-        }
-    ]
-}
-
-function EditTask({ classes, match: { params: { code, taskid } } }) {
-    const task = project.tasks.find(task => task.id == taskid);
-    const headerComponent = () =>
-        <Grid container direction='column' spacing={2}>
-            <Grid container item alignItems='center' spacing={2}>
-                <Box flexGrow={1}>
-                    <WhiteLabelTextField
-                        color='white'
-                        variant='filled'
-                        label='Task Title'
-                        fullWidth />
-                </Box>
-                <Grid item>
-                    <Button>
-                        <Delete style={{ fontSize: '4em', color: '#DADADA' }} />
-                    </Button>
-                </Grid>
+function HeaderComponent({ classes,
+    project,
+    task,
+    setTaskTitle,
+    setTaskDeadline,
+    setTaskDescription,
+    setTaskColor,
+    setAssignees,
+    setMilestones,
+    deleteTask,
+}) {
+    const colorScheme = getColorScheme(task.color);
+    const isAssignee = (member) => task.assignees.find(assignee => assignee.email == member.email);
+    const isAssignedMilestone = (milestone) => task.milestones.find(milestone2 => milestone.id == milestone2.id);
+    return <Grid container direction='column' spacing={2}>
+        <Grid container item alignItems='center' spacing={2}>
+            <Box flexGrow={1}>
+                <WhiteLabelTextField
+                    color={colorScheme ? colorScheme[500] : '#828282'}
+                    variant='filled'
+                    label='Task Title'
+                    value={task.title}
+                    onChange={setTaskTitle}
+                    fullWidth />
+            </Box>
+            <Grid item>
+                <Button onClick={() => task.id ? deleteTask(project.project.code, task.id) : push('/project/' + project.project.code)}>
+                    <Delete style={{ fontSize: '4em', color: '#DADADA' }} />
+                </Button>
+            </Grid>
+        </Grid>
+        <Grid container item spacing={2} style={{ paddingBottom: '1em', width: '80%' }}>
+            <WhiteLabelTextField
+                variant='filled'
+                color={colorScheme ? colorScheme[500] : '#828282'}
+                label='Deadline'
+                onChange={setTaskDeadline}
+                value={task.deadline}
+                fullWidth
+                type='date' />
+        </Grid>
+        <Grid container item spacing={2} style={{ width: '80%' }}>
+            <WhiteLabelTextField
+                variant='filled'
+                color={colorScheme ? colorScheme[500] : '#828282'}
+                label='Description'
+                onChange={setTaskDescription}
+                value={task.description}
+                multiline
+                fullWidth
+                rows={2}
+                rowsMax={3}
+                type='date' />
+        </Grid>
+        <Grid container item direction='column' spacing={1}>
+            <Grid item>
+                <Box color='white' fontSize={12}>
+                    Head Deadlines
+            </Box>
+            </Grid>
+            <SelectMilestones milestones={project.milestones}
+                isChosen={isAssignedMilestone}
+                onChoose={(milestone) => setMilestones(isAssignedMilestone(milestone) ? task.milestones.filter(milestone2 => milestone2.id != milestone.id) : [...task.milestones].concat([milestone]))} />
+        </Grid>
+        <Grid container item direction='column' spacing={1}>
+            <Grid item>
+                <Box color='white' fontSize={12}>
+                    I/Cs
+            </Box>
+            </Grid>
+            <Grid container item spacing={1}>
+                <SelectMembers members={project.members}
+                    isChosen={isAssignee}
+                    onChoose={(member) => setAssignees(isAssignee(member) ? task.assignees.filter(assignee => assignee.email != member.email) : [...task.assignees].concat([member]))} />
+            </Grid>
+        </Grid>
+        <Grid container item direction='column' spacing={1}>
+            <Grid item>
+                <Box color='white' fontSize={12}>
+                    Colour
+            </Box>
             </Grid>
             <Grid container item spacing={2}>
-                <Box>
-                    <WhiteLabelTextField
-                        variant='filled'
-                        label='Deadline'
-                        onChange={(event) => console.log(event.target.value)}
-                        value={task.deadline.toISOString().substring(0, 10) || ''}
-                        type='date' />
-                </Box>
+                {taskColors.map(color => (
+                    <Grid item>
+                        <ButtonBase onClick={() => setTaskColor(color)}>
+                            <Box className={classes.colorOption}
+                                bgcolor={color}
+                                style={{ opacity: task.color == color ? 1 : 0.5 }}>
+                                {task.color == color && <TickIcon />}
+                            </Box>
+                        </ButtonBase>
+                    </Grid>
+                ))}
             </Grid>
-            <Grid container item direction='column' spacing={1}>
-                <Grid item>
-                    <Box color='white' fontSize={12}>
-                        I/Cs
-                    </Box>
-                </Grid>
-                <Grid container item spacing={1}>
-                    <SelectMembers members={project.members}
-                        isChosen={(member) => task.assignees.find(assignee => assignee.email == member.email)} />
-                </Grid>
-            </Grid>
-            <Grid container item direction='column' spacing={1}>
-                <Grid item>
-                    <Box color='white' fontSize={12}>
-                        I/Cs
-                    </Box>
-                </Grid>
-                <Grid container item>
-                    {project.milestones.map(milestone => (
-                        <Grid item>
-                            <Chip label={milestone.name} className={classes.chipMilestone} />
-                        </Grid>
-                    ))}
-                </Grid>
-            </Grid>
-            <Grid container item direction='column' spacing={1}>
-                <Grid item>
-                    <Box color='white' fontSize={12}>
-                        Colour
-                    </Box>
-                </Grid>
-                <Grid container item spacing={2}>
-                    {taskColors.map(color => (
-                        <Grid item>
-                            <ButtonBase>
-                                <Box className={classes.colorOption}
-                                    bgcolor={color}
-                                    style={{ opacity: task.color == color ? 1 : 0.5 }}>
-                                    {task.color == color && <TickIcon />}
-                                </Box>
-                            </ButtonBase>
-                        </Grid>
-                    ))}
-                </Grid>
-            </Grid>
-        </Grid >
+        </Grid>
+    </Grid >
+}
+
+function EditTask({ classes,
+    task,
+    projects,
+    loadProject,
+    loadTask,
+    resetTask,
+    setTaskTitle,
+    setTaskDeadline,
+    setTaskDescription,
+    setTaskColor,
+    setAssignees,
+    setMilestones,
+    addSubTask,
+    setSubTaskAssignees,
+    setSubTaskDeadline,
+    setSubTaskDescription,
+    setSubTaskTitle,
+    deleteSubTask,
+    submitTask,
+    patchTask,
+    deleteTask,
+    match: { params: { code, taskid } } }) {
+    const project = projects[code];
+    useEffect(() => {
+        if (!projects[code]) {
+            loadProject(code);
+        } else if (taskid) {
+            loadTask(code, taskid)
+        } else {
+            resetTask()
+        }
+    }, [projects[code]])
+
+    if (!project || !task) {
+        return <Loader />
+    }
+    const colorScheme = getColorScheme(task.color);
     return (
         <>
-            <Header contentComponent={headerComponent} backPath={'/project/' + code} height='28em' color={getHeaderColor(task)} backColor='#BDBDBD' />
+            <Header contentComponent={HeaderComponent}
+                backPath={'/project/' + code}
+                height='28em'
+                color={getHeaderColor(task)}
+                backColor='#BDBDBD'
+                headerProps={{
+                    classes,
+                    project,
+                    task,
+                    setTaskTitle,
+                    setTaskDeadline,
+                    setTaskDescription,
+                    setTaskColor,
+                    setAssignees,
+                    setMilestones,
+                    deleteTask,
+                }} />
             <Paper className={classes.paperRoot}>
                 <Container maxWidth='sm' style={{ display: 'flex', justifyContent: 'center' }}>
                     <Grid container direction='column' spacing={3} style={{ width: '95%' }}>
@@ -224,18 +240,41 @@ function EditTask({ classes, match: { params: { code, taskid } } }) {
                                     Sub-Tasks
                             </Box>
                                 <Grid item>
-                                    <NumberCircle num={task.subtasks.length} />
+                                    <NumberCircle num={task.subtasks.length} color={colorScheme[50]} />
                                 </Grid>
                             </Grid>
                             <Grid item>
-                                <ButtonBase>
+                                <ButtonBase onClick={addSubTask}>
                                     <AddIcon style={{ fontSize: '2.5em' }} />
                                 </ButtonBase>
                             </Grid>
                         </Grid>
                         {task.subtasks.map((subtask, index) => (
-                            <SubTaskEdit subtask={subtask} index={index + 1} members={project.members} />
+                            <SubTaskEdit subtask={subtask}
+                                index={index}
+                                members={project.members}
+                                setTitle={setSubTaskTitle(index)}
+                                setAssignees={setSubTaskAssignees(index)}
+                                setDescription={setSubTaskDescription(index)}
+                                setDeadline={setSubTaskDeadline(index)}
+                                deleteSubTask={deleteSubTask(index)} />
                         ))}
+                        <Grid container item justify='flex-end' spacing={2} alignItems='center'>
+                            <Grid item>
+                                <ButtonBase>
+                                    <Box color={colorScheme[500]}>
+                                        Discard Changes
+                                </Box>
+                                </ButtonBase>
+                            </Grid>
+                            <Grid item>
+                                <ButtonBase onClick={() => taskid ? patchTask(code) : submitTask(code)}>
+                                    <Box className={classes.doneButton} bgcolor={colorScheme[500]}>
+                                        Done!
+                                </Box>
+                                </ButtonBase>
+                            </Grid>
+                        </Grid>
                     </Grid>
                 </Container>
             </Paper>
@@ -251,7 +290,32 @@ EditTask.propTypes = {
 function mapStateToProps(state) {
     return {
         projects: state.projects.projects,
+        task: state.projects.editTask,
+        user: state.user,
     };
 }
 
-export default connect(mapStateToProps)(withStyles(styles)(EditTask));
+function mapDispatchToProps(dispatch) {
+    return {
+        resetTask: () => dispatch(resetEditTask()),
+        loadProject: (code) => dispatch(loadProject(code)),
+        loadTask: (code, taskid) => dispatch(loadTaskForEdit(code, taskid)),
+        setTaskTitle: (event) => dispatch(setTaskTitle(event.target.value)),
+        setTaskDescription: (event) => dispatch(setTaskDescription(event.target.value)),
+        setTaskDeadline: (event) => dispatch(setTaskDeadline(event.target.value)),
+        setTaskColor: (color) => dispatch(setTaskColor(color)),
+        setAssignees: (assignees) => dispatch(setTaskAssignees(assignees)),
+        setMilestones: (milestones) => dispatch(setTaskMilestones(milestones)),
+        addSubTask: () => dispatch(addSubTask()),
+        setSubTaskTitle: (index) => (event) => dispatch(setSubTaskTitle(index, event.target.value)),
+        setSubTaskDeadline: (index) => (event) => dispatch(setSubTaskDeadline(index, event.target.value)),
+        setSubTaskDescription: (index) => (event) => dispatch(setSubTaskDescription(index, event.target.value)),
+        setSubTaskAssignees: (index) => (assignees) => dispatch(setSubTaskAssignees(index, assignees)),
+        deleteSubTask: (index) => () => dispatch(deleteSubTask(index)),
+        submitTask: (code) => dispatch(submitTask(code)),
+        patchTask: (code) => dispatch(patchTask(code)),
+        deleteTask: (code, taskid) => dispatch(deleteTask(code, taskid)),
+    };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(EditTask));

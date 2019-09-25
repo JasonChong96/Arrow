@@ -8,7 +8,7 @@ import theme from '../modules/theme';
 import PasswordField from '../components/PasswordField';
 import Header from '../components/Header';
 import TitleOnlyHeader from '../components/TitleOnlyHeader';
-import { loadProjects, loadProject } from '../actions';
+import { loadProjects, loadProject, setTaskCompletion } from '../actions';
 import AccountIcon from '@material-ui/icons/AccountCircle';
 import Person from '@material-ui/icons/Person';
 import People from '@material-ui/icons/People';
@@ -65,7 +65,9 @@ function daysTill(date2) {
     return Math.floor(daysDiff);
 }
 
-function ProjectDetails({ classes, loadProject, projects, match: { params: { code } } }) {
+function ProjectDetails({ classes, loadProject, projects, setCompletion, user, match: { params: { code } } }) {
+    const [dialogState, setDialogState] = useState(0);
+    const [showPersonalOnly, setShowPersonalOnly] = useState(true);
     useEffect(() => {
         loadProject(code);
     }, [])
@@ -79,10 +81,16 @@ function ProjectDetails({ classes, loadProject, projects, match: { params: { cod
             subTasks.push({
                 ...subtask,
                 color: task.color,
+                milestones: task.milestones,
+                taskid: task.id,
             })
         })
     })
     var allTasksAndSubtasks = subTasks.concat(project.tasks)
+    const personalLeft = allTasksAndSubtasks.reduce((a, b) =>
+        (a + ((!b.completed && b.assignees.find(assignee => assignee.email == user.email)) ? 1 : 0)), 0);
+    const teamLeft = allTasksAndSubtasks.reduce((a, b) =>
+        (a + (b.completed ? 0 : 1)), 0);
     allTasksAndSubtasks = allTasksAndSubtasks.concat(project.milestones.map(milestone => ({
         name: milestone.name,
         deadline: milestone.date,
@@ -90,6 +98,7 @@ function ProjectDetails({ classes, loadProject, projects, match: { params: { cod
     })))
     allTasksAndSubtasks.sort((a, b) => a.deadline.getTime() - b.deadline.getTime());
     var curMonth = new Date().getMonth();
+    var prevDate = -1;
     const upcomingMilestone = allTasksAndSubtasks.find(entry => entry.isMilestone && entry.deadline > new Date());
     const headerComponent = () =>
         <Grid container direction='column' spacing={2}>
@@ -125,22 +134,25 @@ function ProjectDetails({ classes, loadProject, projects, match: { params: { cod
                     <Grid container direction='column' spacing={1}>
                         <Grid container item alignItems='center'>
                             <Grid item style={{ width: '85%' }}>
-                                <RemainingTasksCircle tasksLeft={4} overdue={false} />
+                                <RemainingTasksCircle tasksLeft={showPersonalOnly ? personalLeft : teamLeft} overdue={false} />
                             </Grid>
                             <Grid item>
-                                <ButtonBase>
+                                <ButtonBase onClick={() => setDialogState(1)}>
                                     <AddIcon style={{ color: theme.palette.primary[500], fontSize: '3em' }} />
                                 </ButtonBase>
                             </Grid>
                         </Grid>
                         {allTasksAndSubtasks.map(entry => {
                             const entryMonth = entry.deadline.getMonth();
+                            const entryDate = entry.deadline.getDate();
                             const renderMonth = entryMonth != curMonth;
+                            const renderDate = entryDate != prevDate || renderMonth
+                            prevDate = entryDate;
                             curMonth = entryMonth;
-                            return <ProjectEntry entry={entry} renderMonth={renderMonth} />
+                            return <ProjectEntry entry={entry} renderMonth={renderMonth} code={code} renderDate={renderDate} setCompletion={setCompletion} />
                         })}
                     </Grid>
-                    <Dialog open maxWidth='xs' fullWidth>
+                    <Dialog maxWidth='xs' fullWidth open={dialogState == 1} onClose={() => setDialogState(0)}>
                         <DialogTitle>Add</DialogTitle>
                         <DialogActions>
                             <Grid container direction='column' spacing={1}>
@@ -166,7 +178,7 @@ function ProjectDetails({ classes, loadProject, projects, match: { params: { cod
                                     }} />
                                 </Grid>
                                 <Grid item>
-                                    <ButtonBase style={{ width: '100%' }}>
+                                    <ButtonBase style={{ width: '100%' }} onClick={() => setDialogState(2)}>
                                         <Grid container item alignItems='center' justify='center' spacing={1} style={{ color: 'black', fontSize: '1.25em' }}>
                                             <Grid item style={{ width: '85%', textAlign: 'start' }}>
                                                 Sub-Task
@@ -177,6 +189,37 @@ function ProjectDetails({ classes, loadProject, projects, match: { params: { cod
                                         </Grid>
                                     </ButtonBase>
                                 </Grid>
+                            </Grid>
+                        </DialogActions>
+                    </Dialog>
+                    <Dialog maxWidth='xs' fullWidth open={dialogState == 2} onClose={() => setDialogState(0)}>
+                        <DialogTitle>Add Sub-Task to</DialogTitle>
+                        <DialogActions>
+                            <Grid container direction='column' spacing={1}>
+                                {project.tasks.map(task => (
+                                    <>
+                                        <Grid item style={{ width: '100%', }}>
+                                            <Link to={'/project/' + code + '/tasks/' + task.id + '/createsubtask'} style={{ width: '100%' }}>
+                                                <ButtonBase style={{ width: '100%', borderLeft: '4px solid ' + task.color }}>
+                                                    <Grid container item alignItems='center' justify='center' spacing={1} style={{ color: 'black', fontSize: '1.25em' }}>
+                                                        <Grid item style={{ width: '85%', textAlign: 'start' }}>
+                                                            {task.title}
+                                                        </Grid>
+                                                        <Grid item>
+                                                            <ArrowRightIcon />
+                                                        </Grid>
+                                                    </Grid>
+                                                </ButtonBase>
+                                            </Link>
+                                        </Grid>
+                                        <Grid item>
+                                            <hr style={{
+                                                border: '0.5px solid #F2F2F2',
+                                                height: '0.5px',
+                                                width: '90%',
+                                            }} />
+                                        </Grid>
+                                    </>))}
                             </Grid>
                         </DialogActions>
                     </Dialog>
@@ -195,12 +238,14 @@ ProjectDetails.propTypes = {
 function mapStateToProps(state) {
     return {
         projects: state.projects.projects,
+        user: state.user
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         loadProject: code => dispatch(loadProject(code)),
+        setCompletion: (id, completed, isSubTask, code) => dispatch(setTaskCompletion(id, completed, isSubTask, code)),
     };
 }
 

@@ -4,7 +4,7 @@
  */
 
 const config = {
-  name: 'Bz Bee',
+  name: 'Arrow',
   description: 'Project Management',
 };
 

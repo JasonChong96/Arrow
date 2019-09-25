@@ -26,6 +26,7 @@ import red from '@material-ui/core/colors/red';
 import CircleIcon from '../components/CircleIcon';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
+import { push } from '../modules/history';
 
 const styles = {
     chipMilestone: {
@@ -63,9 +64,10 @@ function daysTill(date2) {
     return Math.floor(daysDiff);
 }
 
-function ProjectDetails({ classes, entry, renderMonth }) {
+function ProjectDetails({ classes, entry, renderMonth, code, renderDate, setCompletion }) {
     const isOverdue = entry.deadline < new Date() && !entry.completed;
-    const [expanded, setExpanded] = useState(!entry.completed)
+    const [expanded, setExpanded] = useState(!entry.completed);
+    const isTask = entry.subtasks;
     return <>
         {renderMonth && <Grid container item spacing={2} style={{ padding: '1em 0 1em 0' }}>
             <Grid item style={{ width: '15%' }} />
@@ -75,17 +77,19 @@ function ProjectDetails({ classes, entry, renderMonth }) {
         </Grid>}
         <Grid container item spacing={2} >
             <Grid container item direction='column' alignItems='center' style={{ width: '15%' }}>
-                <Box fontSize={20} color={entry.isMilestone ? theme.palette.primary[600] : '#4F4F4F'}>
-                    {entry.deadline.getDate()}
-                </Box>
-                <Box fontSize={18} color={entry.isMilestone ? theme.palette.primary[500] : '#B2B2B2'}>
-                    {getDayString(entry.deadline.getDay())}
-                </Box>
+                {renderDate && <>
+                    <Box fontSize={20} color={entry.isMilestone ? theme.palette.primary[600] : '#4F4F4F'}>
+                        {entry.deadline.getDate()}
+                    </Box>
+                    <Box fontSize={18} color={entry.isMilestone ? theme.palette.primary[500] : '#B2B2B2'}>
+                        {getDayString(entry.deadline.getDay())}
+                    </Box>
+                </>}
             </Grid>
             <Grid container item style={{ width: 'auto' }} direction='column' alignItems='center'>
                 <Box flexGrow={entry.isMilestone ? 1 : 0.2} width={0} border='1px solid #DADADA' background='#DADADA' marginTop='-0.25em' />
                 <Box padding='0.25em 0.25em 0.25em 0.25em' />
-                <ButtonBase>
+                <ButtonBase onClick={() => setCompletion(entry.id, !entry.completed, !isTask, code)}>
                     {!entry.completed ? <CircleOutlined color={isOverdue ? red[500] : '#DADADA'} />
                         : <CircleIcon Icon={TickIcon} />}
                 </ButtonBase>
@@ -106,15 +110,23 @@ function ProjectDetails({ classes, entry, renderMonth }) {
                     </>
                 }
                 {!entry.isMilestone && <Card raised style={{ width: '100%', borderLeft: '4px solid ' + entry.color }}>
-                    <CardContent>
+                    <CardContent onClick={() => {
+                        if (entry.completed) {
+                            setExpanded(!expanded);
+                        } else if (isTask) {
+                            push('/project/' + code + '/tasks/' + entry.id);
+                        } else {
+                            push('/project/' + code + '/tasks/' + entry.taskid + '/subtasks/' + entry.id);
+                        }
+                    }}>
                         <Grid container direction='column' spacing={1}>
-                            <Grid container item spacing={1} alignItems='center' onClick={() => entry.completed ? setExpanded(!expanded) : 0}>
+                            <Grid container item spacing={1} alignItems='center'>
                                 <Grid item style={{ flexGrow: 1 }}>
                                     <Box fontSize={16}>
                                         {entry.title}
                                     </Box>
                                 </Grid>
-                                {!entry.completed && entry.milestones && <Grid item justify='flex-end'>
+                                {!entry.completed && entry.milestones.length > 0 && <Grid item justify='flex-end'>
                                     <Chip label={entry.milestones[0].name} className={classes.chipMilestone} />
                                 </Grid>}
                                 {entry.completed && entry.milestones && <Grid item justify='flex-end'>

@@ -9,17 +9,19 @@ import TickIcon from '@material-ui/icons/Done';
 const styles = {
 }
 
-function SelectMembers({ classes, members, isChosen }) {
+function SelectMembers({ classes, members, isChosen, onChoose }) {
     return members.map(member => (
         <Grid item>
-            <ButtonBase>
-                <Grid container item direction='column' spacing={1} style={{ width: 'auto' }} alignItems='center'>
+            <ButtonBase onClick={() => onChoose(member)}>
+                <Grid container item direction='column' spacing={1} style={{
+                    width: 'auto',
+                    opacity: isChosen(member) ? 1 : 0.4
+                }} alignItems='center'>
                     <Grid item>
                         <CircleIcon
                             Icon={isChosen(member) ? TickIcon : () => <></>}
                             length='32px'
                             padding='8px'
-                            opacity={isChosen(member) ? 1 : 0.6}
                             color='#C4C4C4' />
                     </Grid>
                     <Grid item>

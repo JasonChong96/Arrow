@@ -20,3 +20,33 @@ export function datasetToObject(elem: Element): Object {
   });
   return data;
 }
+
+export function convertDates(obj) {
+  if (!obj) {
+    return;
+  }
+  Object.keys(obj).forEach(key => {
+    if (typeof obj[key] === 'object') {
+      convertDates(obj[key])
+
+    } else if (key == 'date' || key == 'deadline') {
+      obj[key] = new Date(obj[key])
+    }
+  })
+  return obj;
+}
+
+export function convertDatesToString(obj) {
+  if (!obj) {
+    return;
+  }
+  Object.keys(obj).forEach(key => {
+    if (key == 'date' || key == 'deadline') {
+      obj[key] = obj[key].toISOString().substring(0, 10);
+    } else if (typeof obj[key] === 'object') {
+      convertDatesToString(obj[key])
+    }
+  })
+  return obj;
+}
+

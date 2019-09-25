@@ -34,7 +34,6 @@ export function* login({ payload }) {
       realEmail = response.data.email;
     })
     .catch(function (error) {
-      localStorage.removeItem('user');
       var errorMsg = 'Unable to connect to server'
       if (error.response) {
         errorMsg = error.response.data.error;
@@ -70,6 +69,9 @@ export function* register({ payload }) {
       realEmail = response.data.email;
     })
     .catch(function (error) {
+      if (!error.response) {
+        toast.error("Unable to connect to server", { position: toast.POSITION.TOP_RIGHT });
+      }
       toast.error(error.response.data.error, { position: toast.POSITION.TOP_RIGHT });
     });
   if (yield token) {
@@ -161,8 +163,6 @@ export function* register({ payload }) {
  */
 export function* logout() {
   try {
-    yield delay(200);
-    yield localStorage.removeItem('user');
     yield put({
       type: ActionTypes.USER_LOGOUT_SUCCESS,
     });

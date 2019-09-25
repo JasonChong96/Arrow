@@ -11,15 +11,17 @@ const styles = {
 
 };
 
-function SubTaskEdit({ classes, index, subtask, collapsible, members }) {
+function SubTaskEdit({ classes, index, subtask, collapsible, members, setTitle, setDescription, setDeadline, setAssignees, deleteSubTask }) {
     const [expanded, setExpanded] = useState(!collapsible);
-    return <Grid container item direction='column' spacing={1} style={{ background: index % 2 ? 'white' : '#F2F2F2' }}>
+    const isAssignee = (member) => subtask.assignees.find(assignee => assignee.email == member.email);
+    return <Grid container item direction='column' spacing={1} style={{ background: index % 2 ? '#F2F2F2' : 'white' }}>
         <Grid container alignItems='center' spacing={1}>
             <Grid item style={{ width: '66%' }}>
                 <TextField variant='outlined'
-                    label={'Sub-task ' + index}
+                    label={'Sub-task ' + (index + 1)}
                     fullWidth
-                    value={subtask.title || ''} />
+                    value={subtask.title || ''}
+                    onChange={setTitle} />
             </Grid>
             {collapsible && <Grid item>
                 <ButtonBase>
@@ -31,7 +33,7 @@ function SubTaskEdit({ classes, index, subtask, collapsible, members }) {
                 </ButtonBase>
             </Grid>}
             <Grid item>
-                <ButtonBase>
+                <ButtonBase onClick={deleteSubTask}>
                     <Delete style={{ fontSize: '3em' }} />
                 </ButtonBase>
             </Grid>
@@ -45,7 +47,8 @@ function SubTaskEdit({ classes, index, subtask, collapsible, members }) {
                         label='Description'
                         fullWidth
                         multiline
-                        value={subtask.description || ''} >
+                        value={subtask.description || ''}
+                        onChange={setDescription} >
                     </TextField>
                 </Grid>
                 <Grid item>
@@ -54,7 +57,8 @@ function SubTaskEdit({ classes, index, subtask, collapsible, members }) {
                         label='Deadline'
                         type='date'
                         fullWidth
-                        value={subtask.deadline || ''} >
+                        value={subtask.deadline || ''}
+                        onChange={setDeadline} >
                     </TextField>
                 </Grid>
                 <Grid container item direction='column' spacing={1}>
@@ -65,7 +69,8 @@ function SubTaskEdit({ classes, index, subtask, collapsible, members }) {
                     </Grid>
                     <Grid container item spacing={1}>
                         <SelectMembers members={members}
-                            isChosen={(member) => subtask.assignees.find(assignee => assignee.email == member.email)} />
+                            isChosen={isAssignee}
+                            onChoose={(member) => setAssignees(isAssignee(member) ? subtask.assignees.filter(assignee => assignee.email != member.email) : [...subtask.assignees].concat([member]))} />
                     </Grid>
                 </Grid>
             </Grid>

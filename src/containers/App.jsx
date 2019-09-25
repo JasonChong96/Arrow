@@ -34,6 +34,7 @@ import Projects from '../routes/Projects';
 import CreateProject from '../routes/CreateProject';
 import ProjectDetails from '../routes/ProjectDetails';
 import EditTask from '../routes/EditTask';
+import EditSubTask from '../routes/EditSubTask';
 
 const AppWrapper = styled.div`
   display: flex;
@@ -81,27 +82,42 @@ const routes = {
   },
   '/projects': {
     component: Projects,
-    isPublic: true,
+    isPublic: false,
     exact: false,
   },
   '/project/:code': {
     component: ProjectDetails,
-    isPublic: true,
+    isPublic: false,
     exact: true,
   },
   '/project/:code/edit': {
     component: CreateProject,
-    isPublic: true,
+    isPublic: false,
     exact: true,
   },
   '/project/:code/createtask': {
     component: EditTask,
-    isPublic: true,
+    isPublic: false,
+    exact: true,
+  },
+  '/project/:code/tasks/:taskid': {
+    component: EditTask,
+    isPublic: false,
+    exact: true,
+  },
+  '/project/:code/tasks/:taskid/createsubtask': {
+    component: EditSubTask,
+    isPublic: false,
+    exact: true,
+  },
+  '/project/:code/tasks/:taskid/subtasks/:subtaskid': {
+    component: EditSubTask,
+    isPublic: false,
     exact: true,
   },
   '/createproject': {
     component: CreateProject,
-    isPublic: true,
+    isPublic: false,
     exact: false,
   }
 }

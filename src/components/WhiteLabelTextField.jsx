@@ -16,7 +16,6 @@ const styles = {
     '& .focused': {
       color: 'white',
     },
-    backgroundColor: '#828282',
   },
   input: {
     color: 'white'
@@ -36,6 +35,9 @@ function WhiteLabelTextField({ classes, color, ...rest }) {
         className: classes.input,
       }}
       className={classes.root}
+      style={{
+        backgroundColor: color,
+      }}
       {...rest}
     />
   );
