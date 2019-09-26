@@ -6,6 +6,7 @@ import { ActionTypes } from 'constants/index';
 
 export const appState = {
   alerts: [],
+  online: true,
 };
 
 export default {
@@ -25,6 +26,12 @@ export default {
       [ActionTypes.SHOW_ALERT]: (state, { payload }) =>
         immutable(state, {
           alerts: { $push: [payload] },
+        }),
+      [ActionTypes.SET_CONNECTION_STATE]: (state, { payload: { online } }) =>
+        immutable(state, {
+          online: {
+            $set: online,
+          }
         }),
     },
     appState,

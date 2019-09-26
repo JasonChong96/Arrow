@@ -14,10 +14,8 @@ import { utils } from 'styled-minimal';
 import config from 'config';
 
 import Home from 'routes/Home';
-import Private from 'routes/Private';
 import NotFound from 'routes/NotFound';
 
-import Header from 'containers/Header';
 import SystemAlerts from 'containers/SystemAlerts';
 
 import GlobalStyles from 'components/GlobalStyles';
@@ -35,6 +33,9 @@ import CreateProject from '../routes/CreateProject';
 import ProjectDetails from '../routes/ProjectDetails';
 import EditTask from '../routes/EditTask';
 import EditSubTask from '../routes/EditSubTask';
+import JoinProject from '../routes/JoinProject';
+import { Detector } from 'react-detect-offline';
+import { setConnectionState } from '../actions';
 
 const AppWrapper = styled.div`
   display: flex;
@@ -75,11 +76,6 @@ const routes = {
     isPublic: true,
     exact: true,
   },
-  '/private': {
-    component: Private,
-    isPublic: false,
-    exact: false,
-  },
   '/projects': {
     component: Projects,
     isPublic: false,
@@ -88,6 +84,10 @@ const routes = {
   '/project/:code': {
     component: ProjectDetails,
     isPublic: false,
+    exact: true,
+  },
+  '/project/:code/join/:title': {
+    component: JoinProject,
     exact: true,
   },
   '/project/:code/edit': {
@@ -145,6 +145,13 @@ export class App extends React.Component {
     const { dispatch, user, classes } = this.props;
     return (
       <Router history={history} basename='/'>
+        <Detector
+          polling={{ url: 'https://bzbee.herokuapp.com/' }}
+          render={({ online }) => {
+            dispatch(setConnectionState(online))
+            return <> </>
+          }}
+        />
         <ThemeProvider theme={createMuiTheme(theme)}>
           <AppWrapper logged={user.isAuthenticated}>
             <Helmet
@@ -155,8 +162,6 @@ export class App extends React.Component {
               titleTemplate={`%s | ${config.name}`}
               titleAttributes={{ itemprop: 'name', lang: 'pt-br' }}
             />
-            {/* {user.isAuthenticated && <Header dispatch={dispatch} user={user} />} */}
-            {/* <Head /> */}
             <ToastContainer autoClose={3000} hideProgressBar />
             <Main isAuthenticated={user.isAuthenticated} className={classes.main}>
               <Switch>

@@ -1,25 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { withStyles, Grid, Button, Typography, Container, Paper, Box, Chip, Switch, TextField, ButtonBase, Dialog, DialogTitle, DialogContent, DialogActions } from '@material-ui/core';
+import { withStyles, Grid, Button, Container, Paper, Box, TextField, ButtonBase, Dialog, DialogTitle, DialogContent, DialogActions } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { toast } from 'react-toastify';
-import UserTextField from '../components/UserTextField';
-import theme from '../modules/theme';
-import PasswordField from '../components/PasswordField';
-import Header from '../components/Header';
-import TitleOnlyHeader from '../components/TitleOnlyHeader';
-import { loadProjects, setNewProjectTitle, addNewProjectMilestone, setNewProjectMilestoneName, setNewProjectMilestoneDeadline, addNewProjectMember, deleteNewProjectMilestone, submitNewProject, loadProjectForEdit, deleteProject, loadProject, resetNewProject, patchProject } from '../actions';
-import AccountIcon from '@material-ui/icons/AccountCircle';
-import Person from '@material-ui/icons/Person';
-import People from '@material-ui/icons/People';
-import AddIcon from '@material-ui/icons/AddCircleOutline';
-import Project from '../components/Project';
 import { Link } from 'react-router-dom';
+import theme from '../modules/theme';
+import Header from '../components/Header';
+import { setNewProjectTitle, addNewProjectMilestone, setNewProjectMilestoneName, setNewProjectMilestoneDeadline, addNewProjectMember, deleteNewProjectMilestone, submitNewProject, loadProjectForEdit, deleteProject, loadProject, resetNewProject, patchProject, expelMembers } from '../actions';
+import AddIcon from '@material-ui/icons/AddCircleOutline';
 import Delete from '@material-ui/icons/DeleteOutlined';
 import NumberCircle from '../components/NumberCircle';
 import MembersList from '../components/MembersList';
 import { push } from '../modules/history';
 import Loader from '../components/Loader';
+import ConfirmationDialog from '../components/ConfirmationDialog';
+import ListDialog from '../components/ListDialog';
 
 const styles = {
     paperRoot: {
@@ -40,7 +34,16 @@ const styles = {
     },
 };
 
-function HeaderComponent({ classes, updateTitle, project, onClickDelete }) {
+const copyToClipboard = (text) => {
+    var textField = document.createElement('textarea')
+    textField.innerText = text
+    document.body.appendChild(textField)
+    textField.select()
+    document.execCommand('copy')
+    textField.remove()
+}
+
+function HeaderComponent({ classes, updateTitle, project, removedMembers, onClickDelete, onClickAdd, allowAdd, onClickRemove }) {
     return <Grid container direction='column' spacing={2}>
         <Grid container item alignItems='center' spacing={2}>
             <Box flexGrow={1}>
@@ -68,23 +71,23 @@ function HeaderComponent({ classes, updateTitle, project, onClickDelete }) {
                 </Grid>
                 <Box flexGrow={1} />
                 <Box flexGrow={0.25} fontSize={12}>
-                    <Button style={{ textTransform: 'none', color: 'white', fontSize: 12 }}>
+                    <Button onClick={onClickRemove} style={{ textTransform: 'none', color: 'white', fontSize: 12 }}>
                         Remove
             </Button>
                 </Box>
             </Grid>
             <Grid container item alignItems='center' spacing={1} direction='row' style={{ overflowX: 'auto' }}>
-                <MembersList members={project.members} />
-                <Grid container item direction='column' style={{ width: 'auto' }} alignItems='center'>
+                <MembersList members={project.members.filter(member => !removedMembers.includes(member.email))} />
+                {allowAdd && <Grid container item direction='column' style={{ width: 'auto' }} alignItems='center'>
                     <Grid item>
-                        <ButtonBase style={{ display: 'inline-block' }}>
+                        <ButtonBase style={{ display: 'inline-block' }} onClick={onClickAdd}>
                             <AddIcon style={{ fontSize: 48 }} />
                         </ButtonBase>
                     </Grid>
                     <Box fontSize={12}>
                         <br />
                     </Box>
-                </Grid>
+                </Grid>}
             </Grid>
         </Grid>
     </Grid >
@@ -108,6 +111,7 @@ function CreateProject({
     projects,
     loadProject,
     resetProject,
+    expelMembers,
     match: { params: { code } }, }) {
     useEffect(() => {
         if (code) {
@@ -122,15 +126,27 @@ function CreateProject({
         }
     }, [projects[code]])
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [copyDialogOpen, setCopyDialogOpen] = useState(false);
+    const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
+    const [removedMembers, setRemovedMembers] = useState([]);
     if (code && !projects[code]) {
         return <Loader />
     }
     return (
         <>
-            <Header contentComponent={HeaderComponent} backPath={'/projects'} height='16em' color={theme.palette.primary[700]} headerProps={{ classes, updateTitle, project, onClickDelete: () => setDeleteDialogOpen(true) }} />
+            <Header contentComponent={HeaderComponent} backPath={'/projects'} height='16em' color={theme.palette.primary[700]} headerProps={{
+                classes, updateTitle, project, onClickDelete: () => setDeleteDialogOpen(true),
+                onClickAdd: () => {
+                    copyToClipboard(('' + window.location.href).replace('/edit', '/join/' + encodeURIComponent(project.project.title)));
+                    setCopyDialogOpen(true)
+                },
+                allowAdd: project.project.code,
+                onClickRemove: () => setRemoveDialogOpen(true),
+                removedMembers,
+            }} />
             <Paper className={classes.paperRoot}>
                 <Container maxWidth='sm' style={{ display: 'flex', justifyContent: 'center' }}>
-                    <Grid container direction='column' spacing={3} style={{ width: '95%' }}>
+                    <Grid container direction='column' spacing={5} style={{ width: '95%' }}>
                         <Grid container item spacing={2} alignItems='center'>
                             <Grid container item spacing={1} style={{ width: '85%' }} alignItems='center'>
                                 <Box fontWeight={500} fontSize='16px'>
@@ -146,40 +162,43 @@ function CreateProject({
                                 </ButtonBase>
                             </Grid>
                         </Grid>
-                        {project.milestones.map((milestone, index) => (
-                            <Grid container item spacing={2} style={{ background: index % 2 ? '#F2F2F2' : 'white' }}>
-                                <Grid container item direction='column' spacing={1} style={{ width: '85%' }}>
-                                    <Grid item>
-                                        <TextField variant='outlined'
-                                            label={'Hard Deadline ' + (index + 1)}
-                                            value={milestone.name || ''}
-                                            onChange={event => setMilestoneName(index, event)}
-                                            fullWidth />
+                        <Grid container item spacing={3} direction='column' style={{ maxHeight: '50vh', flexWrap: 'nowrap', overflowY: 'auto' }}>
+                            {project.milestones.map((milestone, index) => (
+                                <Grid container item spacing={2} style={{ background: index % 2 ? '#F2F2F2' : 'white' }}>
+                                    <Grid container item direction='column' spacing={1} style={{ width: '85%' }}>
+                                        <Grid item>
+                                            <TextField variant='outlined'
+                                                label={'Hard Deadline ' + (index + 1)}
+                                                value={milestone.name || ''}
+                                                onChange={event => setMilestoneName(index, event)}
+                                                fullWidth />
+                                        </Grid>
+                                        <Grid item>
+                                            <TextField variant='outlined'
+                                                label='Date'
+                                                type='date'
+                                                value={milestone.date}
+                                                onChange={event => setMilestoneDeadline(index, event)}
+                                                fullWidth />
+                                        </Grid>
                                     </Grid>
                                     <Grid item>
-                                        <TextField variant='outlined'
-                                            label='Date'
-                                            type='date'
-                                            value={milestone.date}
-                                            onChange={event => setMilestoneDeadline(index, event)}
-                                            fullWidth />
+                                        <ButtonBase onClick={() => deleteMilestone(index)}>
+                                            <Delete style={{ fontSize: '2.5em' }} />
+                                        </ButtonBase>
                                     </Grid>
                                 </Grid>
-                                <Grid item>
-                                    <ButtonBase onClick={() => deleteMilestone(index)}>
-                                        <Delete style={{ fontSize: '2.5em' }} />
-                                    </ButtonBase>
-                                </Grid>
-                            </Grid>
-                        ))}
-
+                            ))}
+                        </Grid>
                         <Grid container item justify='flex-end' spacing={2} alignItems='center'>
                             <Grid item>
-                                <ButtonBase>
-                                    <Box color={theme.palette.primary[500]}>
-                                        Discard Changes
+                                <Link to={code ? '/project/' + code : '/projects'}>
+                                    <ButtonBase>
+                                        <Box color={theme.palette.primary[500]}>
+                                            Discard Changes
                                 </Box>
-                                </ButtonBase>
+                                    </ButtonBase>
+                                </Link>
                             </Grid>
                             <Grid item>
                                 <ButtonBase onClick={() => code ? patchProject() : submitProject()}>
@@ -192,32 +211,59 @@ function CreateProject({
                     </Grid>
                 </Container>
             </Paper>
-            <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+            <ConfirmationDialog open={deleteDialogOpen}
+                onClose={() => setDeleteDialogOpen(false)}
+                onConfirm={() => {
+                    setDeleteDialogOpen(false);
+                    if (code) {
+                        deleteProject(code);
+                    } else {
+                        push('/projects');
+                    }
+                }}
+                title='Delete Project?'
+                content={() => <> Are you sure you want to PERMANENTLY delete this project, along with its tasks and subtasks?
+                    <br />
+                    <br />
+                    This action is IRREVERSIBLE.</>}
+                cancelText='No, Go Back'
+                confirmText='Yes, Delete Project'
+            />
+            <Dialog open={copyDialogOpen} onClose={() => setCopyDialogOpen(false)}>
                 <DialogTitle>
-                    Delete Project?
+                    Add Members
                 </DialogTitle>
                 <DialogContent>
-                    Are you sure you want to PERMANENTLY delete this project, along with its tasks and subtasks?
+                    Link to Project '{project.project.title}' has been copied!
                     <br />
                     <br />
-                    This action is IRREVERSIBLE.
+                    Share it with your team mates to add them in.
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setDeleteDialogOpen(false)}>
-                        No, Go back
-                    </Button>
-                    <Button onClick={() => {
-                        setDeleteDialogOpen(false);
-                        if (code) {
-                            deleteProject(code);
-                        } else {
-                            push('/projects');
-                        }
-                    }}>
-                        Yes, Delete Project
-                    </Button>
+                    <ButtonBase onClick={() =>
+                        setCopyDialogOpen(false)
+                    }
+                        className={classes.doneButton}>
+                        Got it!
+                    </ButtonBase>
                 </DialogActions>
             </Dialog>
+            <ListDialog open={removeDialogOpen}
+                title='Remove Members'
+                entries={project.members.filter(member => !removedMembers.includes(member.email))}
+                getLabel={member => member.name}
+                canRemove={member => member.email != user.email}
+                onRemove={(member) => {
+                    const newArr = [...removedMembers];
+                    newArr.push(member.email);
+                    return setRemovedMembers(newArr);
+                }}
+                onClose={() => setRemoveDialogOpen(false)}
+                onConfirm={() => {
+                    expelMembers(code, removedMembers);
+                    setRemoveDialogOpen(false);
+                }}
+            />
         </>
     );
 }
@@ -247,8 +293,9 @@ const mapDispatchToProps = dispatch => {
         loadProjectForEdit: (code) => dispatch(loadProjectForEdit(code)),
         deleteProject: (code) => dispatch(deleteProject(code)),
         loadProject: code => dispatch(loadProject(code)),
-        resetProject: code => dispatch(resetNewProject()),
-        patchProject: code => dispatch(patchProject()),
+        resetProject: () => dispatch(resetNewProject()),
+        patchProject: () => dispatch(patchProject()),
+        expelMembers: (code, members) => dispatch(expelMembers(code, members)),
     }
 }
 

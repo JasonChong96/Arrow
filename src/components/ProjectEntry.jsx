@@ -48,7 +48,7 @@ const styles = {
 
 
 function getDayString(day) {
-    const days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+    const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
     return days[day];
 }
 
@@ -57,14 +57,15 @@ function getMonthString(month) {
     return months[month];
 }
 
-function daysTill(date2) {
-    const date1 = new Date();
-    const timeDiff = date2.getTime() - date1.getTime();
+function daysBetween(date1, date2) {
+    const date22 = new Date(date2);
+    const date11 = new Date(date1);
+    const timeDiff = date22.getTime() - date11.getTime();
     const daysDiff = timeDiff / (1000 * 3600 * 24);
     return Math.floor(daysDiff);
 }
 
-function ProjectDetails({ classes, entry, renderMonth, code, renderDate, setCompletion }) {
+function ProjectDetails({ classes, entry, renderMonth, code, renderDate, setCompletion, online }) {
     const isOverdue = entry.deadline < new Date() && !entry.completed;
     const [expanded, setExpanded] = useState(!entry.completed);
     const isTask = entry.subtasks;
@@ -79,17 +80,17 @@ function ProjectDetails({ classes, entry, renderMonth, code, renderDate, setComp
             <Grid container item direction='column' alignItems='center' style={{ width: '15%' }}>
                 {renderDate && <>
                     <Box fontSize={20} color={entry.isMilestone ? theme.palette.primary[600] : '#4F4F4F'}>
-                        {entry.deadline.getDate()}
+                        {entry.deadline.getDate ? entry.deadline.getDate() : new Date(entry.deadline).getDate()}
                     </Box>
                     <Box fontSize={18} color={entry.isMilestone ? theme.palette.primary[500] : '#B2B2B2'}>
-                        {getDayString(entry.deadline.getDay())}
+                        {getDayString(entry.deadline.getDay ? entry.deadline.getDay() : new Date(entry.deadline).getDay())}
                     </Box>
                 </>}
             </Grid>
             <Grid container item style={{ width: 'auto' }} direction='column' alignItems='center'>
                 <Box flexGrow={entry.isMilestone ? 1 : 0.2} width={0} border='1px solid #DADADA' background='#DADADA' marginTop='-0.25em' />
                 <Box padding='0.25em 0.25em 0.25em 0.25em' />
-                <ButtonBase onClick={() => setCompletion(entry.id, !entry.completed, !isTask, code)}>
+                <ButtonBase onClick={() => online ? setCompletion(entry.id, !entry.completed, !isTask, code) : 0}>
                     {!entry.completed ? <CircleOutlined color={isOverdue ? red[500] : '#DADADA'} />
                         : <CircleIcon Icon={TickIcon} />}
                 </ButtonBase>
@@ -104,7 +105,7 @@ function ProjectDetails({ classes, entry, renderMonth, code, renderDate, setComp
                             <Chip label={entry.name} className={classes.chipMilestone} />
 
                             <Box color={theme.palette.primary[600]} flexGrow={1} textAlign='end' marginRight='1em'>
-                                2 Tasks Left
+                                {entry.tasksLeft} Tasks Left
                                                     </Box>
                         </Grid>
                     </>
@@ -113,6 +114,8 @@ function ProjectDetails({ classes, entry, renderMonth, code, renderDate, setComp
                     <CardContent onClick={() => {
                         if (entry.completed) {
                             setExpanded(!expanded);
+                        } else if (!online) {
+                            return
                         } else if (isTask) {
                             push('/project/' + code + '/tasks/' + entry.id);
                         } else {
@@ -126,9 +129,16 @@ function ProjectDetails({ classes, entry, renderMonth, code, renderDate, setComp
                                         {entry.title}
                                     </Box>
                                 </Grid>
-                                {!entry.completed && entry.milestones.length > 0 && <Grid item justify='flex-end'>
-                                    <Chip label={entry.milestones[0].name} className={classes.chipMilestone} />
-                                </Grid>}
+                                {!entry.completed && new Date().getTime() < new Date(entry.deadline).getTime() && entry.milestones.length > 0 &&
+                                    <Grid item justify='flex-end'>
+                                        <Chip label={entry.milestones[0].name} className={classes.chipMilestone} />
+                                    </Grid>}
+                                {!entry.completed && new Date().getTime() > new Date(entry.deadline).getTime() &&
+                                    <Grid item justify='flex-end'>
+                                        <Box color='red'>
+                                            {daysBetween(entry.deadline, new Date())} DAY{daysBetween(entry.deadline, new Date()) == 1 ? '' : 'S'}
+                                        </Box>
+                                    </Grid>}
                                 {entry.completed && entry.milestones && <Grid item justify='flex-end'>
                                     {expanded ? <ExpandLessIcon style={{ fontSize: '1.5em' }} />
                                         : <ExpandMoreIcon style={{ fontSize: '1.5em' }} />}

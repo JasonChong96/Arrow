@@ -15,6 +15,7 @@ import UserTextField from '../components/UserTextField';
 import theme from '../modules/theme';
 import PasswordField from '../components/PasswordField';
 import { Link } from 'react-router-dom';
+import { ReactComponent as Logo } from './logo.svg';
 
 const styles = {
   formContainer: {
@@ -50,11 +51,9 @@ function Login({ classes, dispatch }) {
   return (
     <Container maxWidth="sm">
       <form className={classes.formContainer}>
-        <Grid container alignItems="center" direction="column" justify="center" spacing={5}>
+        <Grid container alignItems="center" direction="column" justify="center" spacing={1}>
           <Grid item>
-            <Box fontWeight={600} fontSize={34}>
-              {config.name}
-            </Box>
+            <Logo style={{ fontSize: '10em' }} />
           </Grid>
           <Grid
             container

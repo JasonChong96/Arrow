@@ -11,7 +11,7 @@ const reducer = persistReducer(
   {
     key: 'rrsb', // key is required
     storage, // storage is now required
-    whitelist: ['app', 'user'],
+    whitelist: ['app', 'user', 'projects'],
   },
   combineReducers({ ...rootReducer }),
 );
@@ -23,7 +23,6 @@ const configStore = (initialState = {}) => {
   const store = createStore(reducer, initialState, composeEnhancer(applyMiddleware(...middleware)));
 
   sagaMiddleware.run(rootSaga);
-
   if (module.hot) {
     module.hot.accept('reducers', () => {
       store.replaceReducer(require('reducers/index').default);

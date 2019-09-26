@@ -28,6 +28,7 @@ import WhiteLabelTextField from '../components/WhiteLabelTextField';
 import Loader from '../components/Loader';
 import SelectMilestones from '../components/SelectMilestones';
 import { push } from '../modules/history';
+import ConfirmationDialog from '../components/ConfirmationDialog';
 
 const styles = {
     paperRoot: {
@@ -85,7 +86,7 @@ function HeaderComponent({ classes,
     setTaskColor,
     setAssignees,
     setMilestones,
-    deleteTask,
+    onClickDelete,
 }) {
     const colorScheme = getColorScheme(task.color);
     const isAssignee = (member) => task.assignees.find(assignee => assignee.email == member.email);
@@ -102,7 +103,7 @@ function HeaderComponent({ classes,
                     fullWidth />
             </Box>
             <Grid item>
-                <Button onClick={() => task.id ? deleteTask(project.project.code, task.id) : push('/project/' + project.project.code)}>
+                <Button onClick={onClickDelete}>
                     <Delete style={{ fontSize: '4em', color: '#DADADA' }} />
                 </Button>
             </Grid>
@@ -138,7 +139,7 @@ function HeaderComponent({ classes,
             </Grid>
             <SelectMilestones milestones={project.milestones}
                 isChosen={isAssignedMilestone}
-                onChoose={(milestone) => setMilestones(isAssignedMilestone(milestone) ? task.milestones.filter(milestone2 => milestone2.id != milestone.id) : [...task.milestones].concat([milestone]))} />
+                onChoose={(milestone) => setMilestones(isAssignedMilestone(milestone) ? task.milestones.filter(milestone2 => milestone2.id != milestone.id) : [milestone])} />
         </Grid>
         <Grid container item direction='column' spacing={1}>
             <Grid item>
@@ -198,6 +199,7 @@ function EditTask({ classes,
     deleteTask,
     match: { params: { code, taskid } } }) {
     const project = projects[code];
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     useEffect(() => {
         if (!projects[code]) {
             loadProject(code);
@@ -229,11 +231,11 @@ function EditTask({ classes,
                     setTaskColor,
                     setAssignees,
                     setMilestones,
-                    deleteTask,
+                    onClickDelete: () => setDeleteDialogOpen(true),
                 }} />
             <Paper className={classes.paperRoot}>
                 <Container maxWidth='sm' style={{ display: 'flex', justifyContent: 'center' }}>
-                    <Grid container direction='column' spacing={3} style={{ width: '95%' }}>
+                    <Grid container direction='column' spacing={5} style={{ width: '95%' }}>
                         <Grid container item spacing={2} alignItems='center'>
                             <Grid container item spacing={1} style={{ width: '85%' }} alignItems='center'>
                                 <Box fontWeight={500} fontSize='16px'>
@@ -249,17 +251,19 @@ function EditTask({ classes,
                                 </ButtonBase>
                             </Grid>
                         </Grid>
-                        {task.subtasks.map((subtask, index) => (
-                            <SubTaskEdit subtask={subtask}
-                                index={index}
-                                members={project.members}
-                                setTitle={setSubTaskTitle(index)}
-                                setAssignees={setSubTaskAssignees(index)}
-                                setDescription={setSubTaskDescription(index)}
-                                setDeadline={setSubTaskDeadline(index)}
-                                deleteSubTask={deleteSubTask(index)} />
-                        ))}
-                        <Grid container item justify='flex-end' spacing={2} alignItems='center'>
+                        <Grid container item direction='column' spacing={3} style={{ maxHeight: '50vh', flexWrap: 'nowrap', overflowY: 'auto' }}>
+                            {task.subtasks.map((subtask, index) => (
+                                <SubTaskEdit subtask={subtask}
+                                    index={index}
+                                    members={project.members}
+                                    setTitle={setSubTaskTitle(index)}
+                                    setAssignees={setSubTaskAssignees(index)}
+                                    setDescription={setSubTaskDescription(index)}
+                                    setDeadline={setSubTaskDeadline(index)}
+                                    deleteSubTask={deleteSubTask(index)} />
+                            ))}
+                        </Grid>
+                        <Grid container item justify='flex-end' spacing={2} alignItems='center' style={{ paddingBottom: '2em' }}>
                             <Grid item>
                                 <ButtonBase>
                                     <Box color={colorScheme[500]}>
@@ -276,6 +280,24 @@ function EditTask({ classes,
                             </Grid>
                         </Grid>
                     </Grid>
+                    <ConfirmationDialog open={deleteDialogOpen}
+                        onClose={() => setDeleteDialogOpen(false)}
+                        onConfirm={() => {
+                            setDeleteDialogOpen(false);
+                            if (taskid) {
+                                deleteTask(project.project.code, task.id);
+                            } else {
+                                push('/project/' + project.project.code);
+                            }
+                        }}
+                        title='Delete Task?'
+                        content={() => <> Are you sure you want to PERMANENTLY delete this task, along with its sub-tasks?
+                    <br />
+                            <br />
+                            This action is IRREVERSIBLE.</>}
+                        cancelText='No, Go Back'
+                        confirmText='Yes, Delete Task'
+                    />
                 </Container>
             </Paper>
         </>

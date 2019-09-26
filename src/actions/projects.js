@@ -47,7 +47,10 @@ export const {
     loadSubTaskForEdit,
     deleteSubTaskAndRedirect,
     submitSubTaskAndRedirect,
-    patchSubTaskAndRedirect, } = createActions({
+    patchSubTaskAndRedirect,
+    setPendingJoin,
+    joinProject,
+    expelMembers, } = createActions({
         [ActionTypes.SET_PROJECT]: (project) => ({ project }),
         [ActionTypes.LOAD_PROJECT]: (code) => ({ code }),
         [ActionTypes.LOAD_PROJECTS]: () => ({}),
@@ -89,4 +92,7 @@ export const {
         [ActionTypes.DELETE_SUB_TASK_AND_REDIRECT]: (code, subtaskid) => ({ code, subtaskid }),
         [ActionTypes.SUBMIT_SUB_TASK_AND_REDIRECT]: (code, taskid) => ({ code, taskid }),
         [ActionTypes.PATCH_SUB_TASK_AND_REDIRECT]: (code) => ({ code }),
+        [ActionTypes.SET_PENDING_JOIN]: (code, title) => ({ code, title }),
+        [ActionTypes.JOIN_PROJECT]: (code) => ({ code }),
+        [ActionTypes.EXPEL_MEMBERS]: (code, members) => ({ code, members }),
     });

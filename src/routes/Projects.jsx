@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { withStyles, Grid, Button, Typography, Container, Paper, Box, Chip, Switch } from '@material-ui/core';
+import { withStyles, Grid, Button, Typography, Container, Paper, Box, Chip, Switch, ButtonBase } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -8,13 +8,16 @@ import theme from '../modules/theme';
 import PasswordField from '../components/PasswordField';
 import Header from '../components/Header';
 import TitleOnlyHeader from '../components/TitleOnlyHeader';
-import { loadProjects } from '../actions';
+import { loadProjects, logOut } from '../actions';
 import AccountIcon from '@material-ui/icons/AccountCircle';
+import LogoutIcon from '@material-ui/icons/ExitToApp';
 import Person from '@material-ui/icons/Person';
 import People from '@material-ui/icons/People';
 import AddIcon from '@material-ui/icons/AddCircleOutline';
 import Project from '../components/Project';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
+import PersonalGroupSwitch from '../components/PersonalGroupSwitch';
+import ConfirmationDialog from '../components/ConfirmationDialog';
 
 
 const styles = {
@@ -58,9 +61,9 @@ const styles = {
 
 
 
-function Projects({ classes, dispatch, projects, user }) {
+function Projects({ classes, loadProjects, projects, user, pendingJoin, logOut, online, projectsCache }) {
     useEffect(() => {
-        dispatch(loadProjects());
+        loadProjects();
     }, [])
 
     const headerComponent = () =>
@@ -74,61 +77,64 @@ function Projects({ classes, dispatch, projects, user }) {
                 </Box>
             </Grid>
             <Grid item >
-                <Grid component="label" container alignItems="center">
-                    <Grid item><Person style={{ color: 'black', fontSize: '1.5em' }} /></Grid>
-                    <Grid item>
-                        <Switch
-                            checked={showGroupTasks}
-                            onChange={() => setShowGroupTasks(!showGroupTasks)}
-                            style={{ color: 'white' }}
-                        />
-                    </Grid>
-                    <Grid item><People style={{ color: 'black', fontSize: '1.5em' }} /></Grid>
-                </Grid>
-            </Grid>
+                <PersonalGroupSwitch onChange={() => setShowGroupTasks(!showGroupTasks)} checked={showGroupTasks} />            </Grid>
         </Grid>
 
     const [showGroupTasks, setShowGroupTasks] = useState(false);
+    const [showLogOutDialog, setShowLogOutDialog] = useState(false);
+    const projectsToDisplay = online ? projects : projects.filter(project => projectsCache[project.project.code]);
     return (
         <>
+            {pendingJoin.code && <Redirect to={'/project/' + pendingJoin.code + '/join/' + pendingJoin.title} />}
             <Header contentComponent={headerComponent} />
             <Paper className={classes.paperRoot}>
                 <Grid container spacing={1} direction='column' className={classes.rootGrid}>
-                    {projects.map(project => {
-                        const daysLeft = project.upcoming_milestone ? daysTill(new Date(project.upcoming_milestone.date)) : 0;
-                        const title = project.project.title;
-                        const upcomingMilestone = project.upcoming_milestone ? project.upcoming_milestone.name : null;
-                        const tasksLeft = showGroupTasks ? project.team_todos : project.personal_todos;
-                        const isOverdue = showGroupTasks ? project.team_overdue : project.personal_overdue;
-                        const code = project.project.code;
-                        return <><Project
-                            title={title}
-                            daysLeft={daysLeft}
-                            milestoneLabel={upcomingMilestone}
-                            tasksLeft={tasksLeft}
-                            overdue={isOverdue}
-                            code={code} />
-                            <hr style={{
-                                background: 'rgba(0, 0, 0, 0.12)',
-                                height: '0.5px',
-                                width: '80%',
-                            }} />
-                        </>
-                    })}
-                    <Link to="/createproject">
-                        <Grid container spacing={2} style={{ marginTop: '1em', justifyContent: 'center' }}>
-                            <Grid item>
-                                <AddIcon />
+                    <Grid container item spacing={1} direction='column' style={{ height: '70vh', overflowY: 'auto', overflowX: 'hidden', flexWrap: 'nowrap' }}>
+                        {projectsToDisplay.map(project => {
+                            const daysLeft = project.upcoming_milestone ? daysTill(new Date(project.upcoming_milestone.date)) : 0;
+                            const title = project.project.title;
+                            const upcomingMilestone = project.upcoming_milestone ? project.upcoming_milestone.name : null;
+                            const tasksLeft = showGroupTasks ? project.team_todos : project.personal_todos;
+                            const isOverdue = showGroupTasks ? project.team_overdue : project.personal_overdue;
+                            const code = project.project.code;
+                            return <><Project
+                                title={title}
+                                daysLeft={daysLeft}
+                                milestoneLabel={upcomingMilestone}
+                                tasksLeft={tasksLeft}
+                                overdue={isOverdue}
+                                code={code} />
+                                <hr style={{
+                                    background: 'rgba(0, 0, 0, 0.12)',
+                                    height: '0.5px',
+                                    width: '80%',
+                                }} />
+                            </>
+                        })}
+                        {online && <Link to="/createproject">
+                            <Grid container spacing={2} style={{ marginTop: '1em', justifyContent: 'center' }}>
+                                <Grid item>
+                                    <AddIcon />
+                                </Grid>
+                                <Grid item>
+                                    Add New Project
                             </Grid>
-                            <Grid item>
-                                Add New Project
-                        </Grid>
-                        </Grid>
-                    </Link>
+                            </Grid>
+                        </Link>}
+                    </Grid>
+                    {online && <Button onClick={() => setShowLogOutDialog(true)}>
+                        <Box display='flex' color='red' fontSize='1.5em' justifyContent='center' alignContent='center' marginTop='2em' height='5vh'>
+                            <LogoutIcon style={{ fontSize: '1.5em' }} /><span> </span>Log out
+                    </Box>
+                    </Button>}
                 </Grid>
-                <Container maxWidth="sm">
-
-                </Container>
+                <ConfirmationDialog open={showLogOutDialog}
+                    onClose={() => setShowLogOutDialog(false)}
+                    onConfirm={() => logOut()}
+                    title='Confirm Log Out'
+                    content={() => <>
+                        Are you sure you want to log out?
+                    </>} />
             </Paper>
         </>
     );
@@ -136,21 +142,31 @@ function Projects({ classes, dispatch, projects, user }) {
 
 function daysTill(date2) {
     const date1 = new Date();
-    const timeDiff = date2.getTime() - date1.getTime();
+    const timeDiff = new Date(date2).getTime() - date1.getTime();
     const daysDiff = timeDiff / (1000 * 3600 * 24);
     return Math.floor(daysDiff);
 }
 
 Projects.propTypes = {
-    dispatch: PropTypes.func.isRequired,
     projects: PropTypes.array.isRequired,
 };
 
 function mapStateToProps(state) {
     return {
         projects: state.projects.projectOverviews,
-        user: state.user
+        user: state.user,
+        pendingJoin: state.projects.pendingJoin,
+        online: state.app.online,
+        projectsCache: state.projects.projects,
     };
 }
 
-export default connect(mapStateToProps)(withStyles(styles)(Projects));
+
+function mapDispatchToProps(dispatch) {
+    return {
+        logOut: () => dispatch(logOut()),
+        loadProjects: () => dispatch(loadProjects()),
+    };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(Projects));

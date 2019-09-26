@@ -39,7 +39,8 @@ export const projectsState = {
         completed: false,
         assignees: [
         ],
-    }
+    },
+    pendingJoin: {},
 };
 
 export default {
@@ -245,9 +246,11 @@ export default {
             },
             [ActionTypes.LOAD_TASK_FOR_EDIT]: (state, { payload: { code, taskid } }) => {
                 const task = state.projects[code].tasks.find(task => task.id == taskid)
+                const editTask = convertDatesToString(cloneDeep(task));
+                editTask.deletedSubtasks = [];
                 return immutable(state, {
                     editTask: {
-                        $set: convertDatesToString(cloneDeep(task)),
+                        $set: editTask,
                     },
                 });
             },
@@ -380,10 +383,17 @@ export default {
                 const taskId = state.editTask.subtasks[index].id;
                 if (taskId) {
                     mod.editTask.deletedSubtasks = {
-                        $push: taskId,
+                        $push: [taskId],
                     }
                 }
                 return immutable(state, mod);
+            },
+            [ActionTypes.SET_PENDING_JOIN]: (state, { payload }) => {
+                return immutable(state, {
+                    pendingJoin: {
+                        $set: payload,
+                    },
+                });
             },
         },
         projectsState,

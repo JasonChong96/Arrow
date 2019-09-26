@@ -28,6 +28,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ArrowRightIcon from '@material-ui/icons/ArrowForwardIos';
 import ProjectEntry from '../components/ProjectEntry';
 import Loader from '../components/Loader';
+import PersonalGroupSwitch from '../components/PersonalGroupSwitch';
 
 const styles = {
     chipMilestone: {
@@ -47,27 +48,30 @@ const styles = {
     },
 };
 
-
-function getDayString(day) {
-    const days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
-    return days[day];
-}
-
 function getMonthString(month) {
     const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUNE', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
     return months[month];
 }
 
-function daysTill(date2) {
+function daysTill(date) {
+    const date2 = date.getTime ? date : new Date(date);
     const date1 = new Date();
     const timeDiff = date2.getTime() - date1.getTime();
     const daysDiff = timeDiff / (1000 * 3600 * 24);
     return Math.floor(daysDiff);
 }
 
-function ProjectDetails({ classes, loadProject, projects, setCompletion, user, match: { params: { code } } }) {
+function containsMilestone(task, milestone) {
+    return task.milestones.find(milestone2 => milestone.id == milestone2.id);
+}
+
+function isTaskAssignedTo(task, member) {
+    return task.assignees.find(assignee => assignee.email == member.email);
+}
+
+function ProjectDetails({ classes, online, loadProject, projects, setCompletion, user, match: { params: { code } } }) {
     const [dialogState, setDialogState] = useState(0);
-    const [showPersonalOnly, setShowPersonalOnly] = useState(true);
+    const [showPersonalOnly, setShowPersonalOnly] = useState(false);
     useEffect(() => {
         loadProject(code);
     }, [])
@@ -88,15 +92,20 @@ function ProjectDetails({ classes, loadProject, projects, setCompletion, user, m
     })
     var allTasksAndSubtasks = subTasks.concat(project.tasks)
     const personalLeft = allTasksAndSubtasks.reduce((a, b) =>
-        (a + ((!b.completed && b.assignees.find(assignee => assignee.email == user.email)) ? 1 : 0)), 0);
+        (a + ((!b.completed && isTaskAssignedTo(b, user)) ? 1 : 0)), 0);
     const teamLeft = allTasksAndSubtasks.reduce((a, b) =>
         (a + (b.completed ? 0 : 1)), 0);
+    if (showPersonalOnly) {
+        allTasksAndSubtasks = allTasksAndSubtasks.filter(entry => isTaskAssignedTo(entry, user));
+    }
     allTasksAndSubtasks = allTasksAndSubtasks.concat(project.milestones.map(milestone => ({
         name: milestone.name,
         deadline: milestone.date,
+        tasksLeft: project.tasks.reduce((a, b) =>
+            (a + ((!b.completed && containsMilestone(b, milestone) && (!showPersonalOnly || isTaskAssignedTo(b, user))) ? (1 + b.subtasks.length) : 0)), 0),
         isMilestone: true,
     })))
-    allTasksAndSubtasks.sort((a, b) => a.deadline.getTime() - b.deadline.getTime());
+    allTasksAndSubtasks.sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
     var curMonth = new Date().getMonth();
     var prevDate = -1;
     const upcomingMilestone = allTasksAndSubtasks.find(entry => entry.isMilestone && entry.deadline > new Date());
@@ -133,23 +142,27 @@ function ProjectDetails({ classes, loadProject, projects, setCompletion, user, m
                 <Container maxWidth='sm' style={{ paddingBottom: '2em' }}>
                     <Grid container direction='column' spacing={1}>
                         <Grid container item alignItems='center'>
-                            <Grid item style={{ width: '85%' }}>
+                            <Grid item style={{ width: '45%' }}>
                                 <RemainingTasksCircle tasksLeft={showPersonalOnly ? personalLeft : teamLeft} overdue={false} />
                             </Grid>
-                            <Grid item>
+                            <Grid item style={{ width: '40%' }}>
+                                <PersonalGroupSwitch onChange={() => setShowPersonalOnly(!showPersonalOnly)} checked={!showPersonalOnly} />
+                            </Grid>
+                            {online && <Grid item>
                                 <ButtonBase onClick={() => setDialogState(1)}>
                                     <AddIcon style={{ color: theme.palette.primary[500], fontSize: '3em' }} />
                                 </ButtonBase>
-                            </Grid>
+                            </Grid>}
                         </Grid>
                         {allTasksAndSubtasks.map(entry => {
-                            const entryMonth = entry.deadline.getMonth();
-                            const entryDate = entry.deadline.getDate();
+                            const deadline = entry.deadline.getMonth ? entry.deadline : new Date(entry.deadline);
+                            const entryMonth = deadline.getMonth();
+                            const entryDate = deadline.getDate();
                             const renderMonth = entryMonth != curMonth;
                             const renderDate = entryDate != prevDate || renderMonth
                             prevDate = entryDate;
                             curMonth = entryMonth;
-                            return <ProjectEntry entry={entry} renderMonth={renderMonth} code={code} renderDate={renderDate} setCompletion={setCompletion} />
+                            return <ProjectEntry entry={entry} renderMonth={renderMonth} code={code} renderDate={renderDate} setCompletion={setCompletion} online={online} />
                         })}
                     </Grid>
                     <Dialog maxWidth='xs' fullWidth open={dialogState == 1} onClose={() => setDialogState(0)}>
@@ -157,7 +170,7 @@ function ProjectDetails({ classes, loadProject, projects, setCompletion, user, m
                         <DialogActions>
                             <Grid container direction='column' spacing={1}>
                                 <Grid item style={{ width: '100%', }}>
-                                    <Link to={'/project/' + code + '/createtask'} style={{ width: '100%' }}>
+                                    <Link to={online ? '/project/' + code + '/createtask' : undefined} style={{ width: '100%' }}>
                                         <ButtonBase style={{ width: '100%' }}>
                                             <Grid container item alignItems='center' justify='center' spacing={1} style={{ color: 'black', fontSize: '1.25em' }}>
                                                 <Grid item style={{ width: '85%', textAlign: 'start' }}>
@@ -238,7 +251,8 @@ ProjectDetails.propTypes = {
 function mapStateToProps(state) {
     return {
         projects: state.projects.projects,
-        user: state.user
+        user: state.user,
+        online: state.app.online,
     };
 }
 

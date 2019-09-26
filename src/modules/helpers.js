@@ -26,11 +26,10 @@ export function convertDates(obj) {
     return;
   }
   Object.keys(obj).forEach(key => {
-    if (typeof obj[key] === 'object') {
-      convertDates(obj[key])
-
-    } else if (key == 'date' || key == 'deadline') {
+    if (key == 'date' || key == 'deadline') {
       obj[key] = new Date(obj[key])
+    } else if (typeof obj[key] === 'object') {
+      convertDates(obj[key])
     }
   })
   return obj;

@@ -28,6 +28,7 @@ import WhiteLabelTextField from '../components/WhiteLabelTextField';
 import Loader from '../components/Loader';
 import SelectMilestones from '../components/SelectMilestones';
 import { push } from '../modules/history';
+import ConfirmationDialog from '../components/ConfirmationDialog';
 
 const styles = {
     paperRoot: {
@@ -122,6 +123,7 @@ function EditSubTask({ classes,
     patchSubTask,
     match: { params: { code, taskid, subtaskid } } }) {
     const project = projects[code];
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     useEffect(() => {
         if (!projects[code]) {
             loadProject(code);
@@ -161,7 +163,7 @@ function EditSubTask({ classes,
                             setAssignees={setAssignees}
                             setDescription={setDescription}
                             setDeadline={setDeadline}
-                            deleteSubTask={() => subtaskid ? deleteSubTask(code, subtaskid) : push('/project/' + code)} />
+                            deleteSubTask={() => setDeleteDialogOpen(true)} />
                         <Grid container item justify='flex-end' spacing={2} alignItems='center'>
                             <Grid item>
                                 <ButtonBase>
@@ -179,6 +181,24 @@ function EditSubTask({ classes,
                             </Grid>
                         </Grid>
                     </Grid>
+                    <ConfirmationDialog open={deleteDialogOpen}
+                        onClose={() => setDeleteDialogOpen(false)}
+                        onConfirm={() => {
+                            setDeleteDialogOpen(false);
+                            if (subtaskid) {
+                                deleteSubTask(code, subtaskid)
+                            } else {
+                                push('/project/' + project.project.code);
+                            }
+                        }}
+                        title='Delete Sub-Task?'
+                        content={() => <> Are you sure you want to PERMANENTLY delete this sub-task?
+                            <br />
+                            <br />
+                            This action is IRREVERSIBLE.</>}
+                        cancelText='No, Go Back'
+                        confirmText='Yes, Delete Sub-Task'
+                    />
                 </Container>
             </Paper>
         </>

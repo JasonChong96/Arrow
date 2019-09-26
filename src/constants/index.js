@@ -66,6 +66,10 @@ export const ActionTypes = keyMirror({
   SUBMIT_SUB_TASK_AND_REDIRECT: undefined,
   PATCH_SUB_TASK_AND_REDIRECT: undefined,
   DELETE_TASK: undefined,
+  SET_PENDING_JOIN: undefined,
+  JOIN_PROJECT: undefined,
+  EXPEL_MEMBERS: undefined,
+  SET_CONNECTION_STATE: undefined,
 });
 
 /**

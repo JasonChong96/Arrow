@@ -9,7 +9,7 @@ export default function Routes({ isAuthenticated, paths }) {
   return (
     <>
       {Object.entries(paths).map(([path, { component, isPublic, exact }], i) => {
-        if (isPublic) {
+        if (isPublic || (typeof isPublic == 'undefined')) {
           return (
             <RoutePublic
               key={path}
@@ -17,6 +17,7 @@ export default function Routes({ isAuthenticated, paths }) {
               path={path}
               exact={exact}
               component={component}
+              allowAuthenticated={typeof isPublic == 'undefined'}
             />
           );
         } else {
