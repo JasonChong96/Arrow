@@ -69,10 +69,10 @@ function Projects({ classes, loadProjects, projects, user, pendingJoin, logOut, 
     const headerComponent = () =>
         <Grid container alignItems='center' spacing={1} className={classes.headerRoot} justify='space-around'>
             <Grid item>
-                <AccountIcon style={{ fontSize: '4em', color: '#333333' }} />
+                <AccountIcon style={{ fontSize: '3em', color: '#333333' }} />
             </Grid>
             <Grid item style={{ width: '40%' }}>
-                <Box fontWeight={600} fontSize='28px' color="black" maxWidth='100%' textOverflow='ellipsis' overflow='hidden' whiteSpace='nowrap'>
+                <Box fontWeight={600} fontSize='24px' color="black" maxWidth='50vw' textOverflow='ellipsis' overflow='hidden' whiteSpace='nowrap'>
                     {user.displayName}
                 </Box>
             </Grid>

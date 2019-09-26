@@ -35,8 +35,8 @@ function Project({ classes, title, daysLeft, milestoneLabel, tasksLeft, overdue,
     return <Grid container item className={classes.root} alignItems='center'>
         <Box flexGrow={0.1} />
         <Grid container item direction='column' className={classes.leftLabel} spacing={1}>
-            <Grid item>
-                <Box fontWeight={500} fontSize={18}>
+            <Grid container item>
+                <Box fontWeight={500} fontSize={18} textOverflow='ellipsis' overflow='hidden' whiteSpace='nowrap' width='100%'>
                     {title}
                 </Box>
             </Grid>

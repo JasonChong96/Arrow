@@ -111,8 +111,8 @@ function ProjectDetails({ classes, online, loadProject, projects, setCompletion,
     const upcomingMilestone = allTasksAndSubtasks.find(entry => entry.isMilestone && entry.deadline > new Date());
     const headerComponent = () =>
         <Grid container direction='column' spacing={2}>
-            <Grid container item>
-                <Box fontSize={24} color='black' flexGrow='0.9'>
+            <Grid container item wrap='nowrap'>
+                <Box fontSize={24} color='black' width='65vw' textOverflow='ellipsis' overflow='hidden' whiteSpace='nowrap'>
                     {project.project.title}
                 </Box>
                 <Box alignSelf='flex-end' color='black'>
