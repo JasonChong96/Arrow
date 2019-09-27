@@ -54,7 +54,7 @@ export const {
 } = createActions({
   [ActionTypes.SET_PROJECT]: project => ({ project }),
   [ActionTypes.LOAD_PROJECT]: code => ({ code }),
-  [ActionTypes.LOAD_PROJECTS]: () => ({}),
+  [ActionTypes.LOAD_PROJECTS]: (reloadCache) => ({ reloadCache }),
   [ActionTypes.SET_PROJECT_OVERVIEWS]: projects => ({ projects }),
   [ActionTypes.SET_NEW_PROJECT_TITLE]: title => ({ title }),
   [ActionTypes.SET_NEW_PROJECT_MILESTONE_NAME]: (index, name) => ({ index, name }),

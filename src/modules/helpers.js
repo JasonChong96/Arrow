@@ -41,7 +41,7 @@ export function convertDatesToString(obj) {
   }
   Object.keys(obj).forEach(key => {
     if (key == 'date' || key == 'deadline') {
-      obj[key] = obj[key].toISOString().substring(0, 10);
+      obj[key] = new Date(obj[key]).toISOString().substring(0, 10);
     } else if (typeof obj[key] === 'object') {
       convertDatesToString(obj[key]);
     }

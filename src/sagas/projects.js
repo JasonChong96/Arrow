@@ -33,7 +33,7 @@ function* checkAuth(response) {
   }
 }
 
-export function* loadProjects() {
+export function* loadProjects({ payload: { reloadCache } }) {
   const token = yield select(state => state.user.token);
   let projects;
   let errorResponse;
@@ -62,8 +62,10 @@ export function* loadProjects() {
   if (yield typeof projects !== 'undefined') {
     yield projects.forEach(convertDates);
     yield put(setProjectOverviews(projects));
-    for (let i = 0; i < projects.length; i++) {
-      yield loadProject({ payload: { code: projects[i].project.code } });
+    if (reloadCache) {
+      for (let i = 0; i < projects.length; i++) {
+        yield loadProject({ payload: { code: projects[i].project.code } });
+      }
     }
   }
 }
@@ -240,7 +242,7 @@ export function* patchSubTask(subtask) {
         Accept: 'application/json',
       },
     })
-    .then(response => {})
+    .then(response => { })
     .catch(error => {
       let errorMsg = 'Unable to connect to server';
       if (error.response) {
@@ -374,7 +376,7 @@ export function* expelMembers({ payload: { code, members } }) {
         Accept: 'application/json',
       },
     })
-    .then(response => {})
+    .then(response => { })
     .catch(error => {
       let errorMsg = 'Unable to connect to server';
       if (error.response) {

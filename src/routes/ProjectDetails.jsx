@@ -14,7 +14,7 @@ import AddIcon from '@material-ui/icons/AddCircleOutline';
 import ArrowRightIcon from '@material-ui/icons/ArrowForwardIos';
 import EditIcon from '@material-ui/icons/EditOutlined';
 import PropTypes from 'prop-types';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { loadProject, loadProjects, setTaskCompletion } from '../actions';
@@ -67,10 +67,18 @@ function ProjectDetails({
 }) {
   const [dialogState, setDialogState] = useState(0);
   const [showPersonalOnly, setShowPersonalOnly] = useState(false);
+  const firstUndone = useRef(null);
   useEffect(() => {
     loadProject(code);
     loadProjects();
   }, []);
+  useEffect(() => {
+    setTimeout(() => {
+      if (firstUndone.current) {
+        firstUndone.current.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 500);
+  }, [])
   const project = projects[code];
   if (!project) {
     return <Loader />;
@@ -86,6 +94,7 @@ function ProjectDetails({
       });
     });
   });
+  var doneTillCurrentDate = true;
   let allTasksAndSubtasks = subTasks.concat(project.tasks);
   const personalLeft = allTasksAndSubtasks.reduce(
     (a, b) => a + (!b.completed && isTaskAssignedTo(b, user) ? 1 : 0),
@@ -96,21 +105,25 @@ function ProjectDetails({
     allTasksAndSubtasks = allTasksAndSubtasks.filter(entry => isTaskAssignedTo(entry, user));
   }
   allTasksAndSubtasks = allTasksAndSubtasks.concat(
-    project.milestones.map(milestone => ({
-      name: milestone.name,
-      deadline: milestone.date,
-      tasksLeft: project.tasks.reduce(
+    project.milestones.map(milestone => {
+      const tasksLeft = project.tasks.reduce(
         (a, b) =>
           a +
           (!b.completed &&
-          containsMilestone(b, milestone) &&
-          (!showPersonalOnly || isTaskAssignedTo(b, user))
+            containsMilestone(b, milestone) &&
+            (!showPersonalOnly || isTaskAssignedTo(b, user))
             ? 1 + b.subtasks.length
             : 0),
         0,
-      ),
-      isMilestone: true,
-    })),
+      );
+      return {
+        name: milestone.name,
+        deadline: milestone.date,
+        tasksLeft,
+        completed: tasksLeft == 0,
+        isMilestone: true,
+      }
+    }),
   );
   allTasksAndSubtasks.sort(
     (a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
@@ -189,17 +202,24 @@ function ProjectDetails({
               const entryDate = deadline.getDate();
               const renderMonth = entryMonth != curMonth;
               const renderDate = entryDate != prevDate || renderMonth;
+              const scrollHere = doneTillCurrentDate && entry.milestones && !entry.completed;
+              if (scrollHere) {
+                doneTillCurrentDate = false;
+              }
               prevDate = entryDate;
               curMonth = entryMonth;
               return (
-                <ProjectEntry
-                  entry={entry}
-                  renderMonth={renderMonth}
-                  code={code}
-                  renderDate={renderDate}
-                  setCompletion={setCompletion}
-                  online={online}
-                />
+                <>
+                  {scrollHere && <div ref={firstUndone} />}
+                  <ProjectEntry
+                    entry={entry}
+                    renderMonth={renderMonth}
+                    code={code}
+                    renderDate={renderDate}
+                    setCompletion={setCompletion}
+                    online={online}
+                  />
+                </>
               );
             })}
           </Grid>
@@ -319,7 +339,7 @@ ProjectDetails.propTypes = {
   loadProject: PropTypes.func.isRequired,
   loadProjects: PropTypes.func.isRequired,
   online: PropTypes.bool.isRequired,
-  projects: PropTypes.array.isRequired,
+  projects: PropTypes.object.isRequired,
   setCompletion: PropTypes.func.isRequired,
   user: PropTypes.object.isRequired,
 };
@@ -335,7 +355,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
   return {
     loadProject: code => dispatch(loadProject(code)),
-    loadProjects: () => dispatch(loadProjects()),
+    loadProjects: () => dispatch(loadProjects(false)),
     setCompletion: (id, completed, isSubTask, code) =>
       dispatch(setTaskCompletion(id, completed, isSubTask, code)),
   };

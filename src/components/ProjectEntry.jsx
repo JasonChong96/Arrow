@@ -63,8 +63,8 @@ function ProjectDetails({ classes, entry, renderMonth, code, renderDate, setComp
       {renderMonth && (
         <Grid container item spacing={2} className={classes.monthWrapper}>
           <Grid item className={classes.monthWidth} />
-          <Box fontWeight="bold" fontSize="1.25em" color="#828282">
-            {getMonthString(entry.deadline.getMonth())}
+          <Box fontWeight="bold" fontSize="1.25em" color="#828282" padding='1em 0 1em 0'>
+            {getMonthString(new Date(entry.deadline).getMonth())}
           </Box>
         </Grid>
       )}
@@ -103,13 +103,13 @@ function ProjectDetails({ classes, entry, renderMonth, code, renderDate, setComp
           />
           <Box padding="0.25em 0.25em 0.25em 0.25em" />
           <ButtonBase
-            onClick={() => (online ? setCompletion(entry.id, !entry.completed, !isTask, code) : 0)}
+            onClick={() => (online && !entry.isMilestone ? setCompletion(entry.id, !entry.completed, !isTask, code) : 0)}
           >
             {!entry.completed ? (
               <CircleOutlined color={isOverdue ? red[500] : '#DADADA'} />
             ) : (
-              <CircleIcon Icon={TickIcon} />
-            )}
+                <CircleIcon Icon={TickIcon} />
+              )}
           </ButtonBase>
           <Box padding="0.25em 0.25em 0.25em 0.25em" />
           <Box
@@ -179,8 +179,8 @@ function ProjectDetails({ classes, entry, renderMonth, code, renderDate, setComp
                         {expanded ? (
                           <ExpandLessIcon className={classes.expandIcon} />
                         ) : (
-                          <ExpandMoreIcon className={classes.expandIcon} />
-                        )}
+                            <ExpandMoreIcon className={classes.expandIcon} />
+                          )}
                       </Grid>
                     )}
                   </Grid>

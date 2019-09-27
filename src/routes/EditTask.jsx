@@ -4,7 +4,7 @@ import AddIcon from '@material-ui/icons/AddCircleOutline';
 import Delete from '@material-ui/icons/DeleteOutlined';
 import TickIcon from '@material-ui/icons/Done';
 import PropTypes from 'prop-types';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { connect } from 'react-redux';
 import {
   addSubTask,
@@ -243,7 +243,6 @@ function EditTask({
       resetTask();
     }
   }, [projects[code]]);
-
   if (!project || !task) {
     return <Loader />;
   }

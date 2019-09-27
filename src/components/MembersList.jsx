@@ -7,7 +7,7 @@ const styles = {
   memberWrapper: {
     width: 'auto',
   },
-  accountIcon: {
+  memberIcon: {
     fontSize: '3em',
   },
 };

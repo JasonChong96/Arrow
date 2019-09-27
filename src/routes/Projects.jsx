@@ -214,7 +214,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
   return {
     logOut: () => dispatch(logOut()),
-    loadProjects: () => dispatch(loadProjects()),
+    loadProjects: () => dispatch(loadProjects(true)),
   };
 }
 
