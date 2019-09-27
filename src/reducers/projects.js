@@ -135,7 +135,7 @@ export default {
               project: projectInfo.project,
               milestones: projectInfo.milestones.map(milestone => ({
                 name: milestone.name,
-                date: milestone.date.toISOString().substring(0, 10),
+                date: new Date(milestone.date).toISOString().substring(0, 10),
                 id: milestone.id,
               })),
               members: projectInfo.members,

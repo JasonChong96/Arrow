@@ -156,7 +156,7 @@ function ProjectDetails({
       </Grid>
       <Grid container item alignItems="center">
         <Box fontSize={20} color="#4F4F4F" marginRight="1em">
-          {getMonthString(new Date().getMonth())}
+          {new Date().getDate()} {getMonthString(new Date().getMonth())}
         </Box>
         {upcomingMilestone && (
           <>

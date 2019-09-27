@@ -78,7 +78,7 @@ function HeaderComponent({ classes, task }) {
       </Grid>
       <Grid item>
         <Box fontSize="0.875em">
-          {task.deadline
+          {new Date(task.deadline)
             .toISOString()
             .substring(0, 10)
             .replace('-', '/')}
