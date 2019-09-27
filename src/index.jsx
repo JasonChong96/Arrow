@@ -6,11 +6,9 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/lib/integration/react';
 
 import { store, persistor } from 'store/index';
-import { showAlert } from 'actions/index';
 
 import App from 'containers/App';
 import Loader from 'components/Loader';
-import Reload from 'components/Reload';
 
 export const app = {
   cssRetries: 0,
@@ -20,10 +18,10 @@ export const app = {
     this.render(App);
 
     /* istanbul ignore else */
-    //if (process.env.NODE_ENV === 'production') {
+    // if (process.env.NODE_ENV === 'production') {
     // TODO: temporarily disabled
     this.initOfflinePlugin();
-    //}
+    // }
   },
   initOfflinePlugin() {
     const OfflinePlugin = require('offline-plugin/runtime');
@@ -33,9 +31,9 @@ export const app = {
       onUpdateReady: () => {
         OfflinePlugin.applyUpdate();
       },
-      onUpdated: () => {
-        // store.dispatch(showAlert(<Reload />, { id: 'sw-update', icon: 'bolt', timeout: 0 }));
-      },
+      // onUpdated: () => {
+      //   // store.dispatch(showAlert(<Reload />, { id: 'sw-update', icon: 'bolt', timeout: 0 }));
+      // },
     });
   },
   render(Component) {

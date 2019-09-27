@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, withStyles, Grid, Button, Typography, Box } from '@material-ui/core';
-import { login } from '../actions/user';
 import PropTypes from 'prop-types';
+import { login } from '../actions/user';
 import theme from '../modules/theme';
 
 const styles = {
@@ -18,8 +18,8 @@ const styles = {
     },
   },
   input: {
-    color: 'white'
-  }
+    color: 'white',
+  },
 };
 
 function WhiteLabelTextField({ classes, color, ...rest }) {
@@ -45,17 +45,17 @@ function WhiteLabelTextField({ classes, color, ...rest }) {
 
 WhiteLabelTextField.propTypes = {
   classes: PropTypes.object.isRequired,
-  onChange: PropTypes.func.isRequired,
+  error: PropTypes.bool.isRequired,
   label: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  required: PropTypes.bool.isRequired,
   type: PropTypes.string.isRequired,
   value: PropTypes.string.isRequired,
-  error: PropTypes.bool.isRequired,
-  required: PropTypes.bool.isRequired,
 };
 
 WhiteLabelTextField.defaultProps = {
   error: false,
   required: false,
-}
+};
 
 export default withStyles(styles)(WhiteLabelTextField);

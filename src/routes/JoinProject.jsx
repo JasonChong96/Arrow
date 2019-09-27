@@ -1,46 +1,67 @@
-import React, { useEffect } from 'react';
-import { Redirect } from 'react-router-dom';
+import React from 'react';
 import { connect } from 'react-redux';
-
-import Loader from '../components/Loader';
-import { joinProject, setPendingJoin, loadProject } from '../actions';
-import { push } from '../modules/history';
+import { Redirect } from 'react-router-dom';
+import { joinProject, setPendingJoin } from '../actions';
 import ConfirmationDialog from '../components/ConfirmationDialog';
+import Loader from '../components/Loader';
+import { push } from '../modules/history';
 
-const JoinProject = ({ isAuthenticated, setPendingJoin, joinProject, match: { params: { code, title } } }) => {
-    if (!isAuthenticated) {
-        setPendingJoin(code, title);
-    }
-    return <>
-        {isAuthenticated && <><Loader /><ConfirmationDialog
+const JoinProject = ({
+  isAuthenticated,
+  setPendingJoin,
+  joinProject,
+  match: {
+    params: { code, title },
+  },
+}) => {
+  if (!isAuthenticated) {
+    setPendingJoin(code, title);
+  }
+  return (
+    <>
+      {isAuthenticated && (
+        <>
+          <Loader />
+          <ConfirmationDialog
             open
-            onClose={() => { }}
+            onClose={() => {}}
             onCancel={() => {
-                setPendingJoin(null, null);
-                push('/projects');
+              setPendingJoin(null, null);
+              push('/projects');
             }}
             onConfirm={() => {
-                joinProject(code);
+              joinProject(code);
             }}
-            title='Join Project'
-            content={() => <> You've been invited to project '{decodeURIComponent(title)}'
-                            <br />
+            title="Join Project"
+            content={() => (
+              <>
+                {' '}
+                You've been invited to project '{decodeURIComponent(title)}'
                 <br />
-                Would you like to join this project?.</>}
-            cancelText='Not Now'
-            confirmText='Yes!'
-        /></>}
-        {!isAuthenticated && <Redirect to='/login' />}
+                <br />
+                Would you like to join this project?.
+              </>
+            )}
+            cancelText="Not Now"
+            confirmText="Yes!"
+          />
+        </>
+      )}
+      {!isAuthenticated && <Redirect to="/login" />}
     </>
+  );
 };
 
-const mapStateToProps = (state) => ({
-    isAuthenticated: state.user.isAuthenticated,
-})
-
-const mapDispatchToProps = (dispatch) => ({
-    setPendingJoin: (code, title) => dispatch(setPendingJoin(code, title)),
-    joinProject: (code) => dispatch(joinProject(code)),
+const mapStateToProps = state => ({
+  isAuthenticated: state.user.isAuthenticated,
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(JoinProject);
+const mapDispatchToProps = dispatch => ({
+  setPendingJoin: (code, title) => dispatch(setPendingJoin(code, title)),
+  joinProject: code => dispatch(joinProject(code)),
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(JoinProject);

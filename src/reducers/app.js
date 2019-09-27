@@ -31,7 +31,7 @@ export default {
         immutable(state, {
           online: {
             $set: online,
-          }
+          },
         }),
     },
     appState,

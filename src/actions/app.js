@@ -13,7 +13,7 @@ export { goBack, go, push, replace } from 'modules/history';
 
 export const { hideAlert, showAlert, switchMenu, setConnectionState } = createActions({
   [ActionTypes.SWITCH_MENU]: (query: string) => ({ query }),
-  [ActionTypes.SET_CONNECTION_STATE]: (online) => ({ online }),
+  [ActionTypes.SET_CONNECTION_STATE]: online => ({ online }),
   [ActionTypes.HIDE_ALERT]: (id: string) => ({ id }),
   [ActionTypes.SHOW_ALERT]: (message: string, options: Object) => {
     const timeout = options.variant === 'danger' ? 0 : 5;

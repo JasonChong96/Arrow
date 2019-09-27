@@ -1,20 +1,12 @@
-import React, { useState } from 'react';
-import {
-  withStyles,
-  Grid,
-  Button,
-  Typography,
-  Box,
-  Container,
-} from '@material-ui/core';
-import { login } from '../actions/user';
+import { Button, Container, Grid, Typography, withStyles } from '@material-ui/core';
 import PropTypes from 'prop-types';
+import React, { useState } from 'react';
 import { connect } from 'react-redux';
-import config from '../config';
+import { Link } from 'react-router-dom';
+import { login } from '../actions/user';
+import PasswordField from '../components/PasswordField';
 import UserTextField from '../components/UserTextField';
 import theme from '../modules/theme';
-import PasswordField from '../components/PasswordField';
-import { Link } from 'react-router-dom';
 import { ReactComponent as Logo } from './logo.svg';
 
 const styles = {
@@ -41,6 +33,7 @@ const styles = {
     color: theme.palette.primary[500],
     textTransform: 'none',
     borderRadius: '200px',
+    textDecoration: 'none',
   },
 };
 
@@ -88,7 +81,10 @@ function Login({ classes, dispatch }) {
               spacing={1}
             >
               <Grid item className={classes.width}>
-                <Button className={classes.loginButton} onClick={() => dispatch(login(email, password))}>
+                <Button
+                  className={classes.loginButton}
+                  onClick={() => dispatch(login(email, password))}
+                >
                   <Typography variant="h5">Log In</Typography>
                 </Button>
               </Grid>
@@ -108,6 +104,7 @@ function Login({ classes, dispatch }) {
 }
 
 Login.propTypes = {
+  classes: PropTypes.object.isRequired,
   dispatch: PropTypes.func.isRequired,
 };
 

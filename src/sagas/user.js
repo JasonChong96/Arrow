@@ -20,21 +20,21 @@ const authAxios = axios.create({
  */
 export function* login({ payload }) {
   const { email, password } = payload;
-  var token = '';
-  var realEmail = '';
-  var displayName = '';
+  let token = '';
+  let realEmail = '';
+  let displayName = '';
   yield authAxios
     .post('/login', {
-      email: email,
-      password: password,
+      email,
+      password,
     })
-    .then(function (response) {
+    .then(response => {
       token = response.data.jwt;
       displayName = response.data.name;
       realEmail = response.data.email;
     })
-    .catch(function (error) {
-      var errorMsg = 'Unable to connect to server'
+    .catch(error => {
+      let errorMsg = 'Unable to connect to server';
       if (error.response) {
         errorMsg = error.response.data.error;
       }
@@ -54,23 +54,23 @@ export function* login({ payload }) {
 
 export function* register({ payload }) {
   const { email, password, displayName } = payload;
-  var token = "";
-  var realEmail = "";
-  var name = "";
+  let token = '';
+  let realEmail = '';
+  let name = '';
   yield authAxios
     .post('/signup', {
-      email: email,
-      password: password,
+      email,
+      password,
       name: displayName,
     })
-    .then(function (response) {
+    .then(response => {
       token = response.data.jwt;
       name = response.data.name;
       realEmail = response.data.email;
     })
-    .catch(function (error) {
+    .catch(error => {
       if (!error.response) {
-        toast.error("Unable to connect to server", { position: toast.POSITION.TOP_RIGHT });
+        toast.error('Unable to connect to server', { position: toast.POSITION.TOP_RIGHT });
       }
       toast.error(error.response.data.error, { position: toast.POSITION.TOP_RIGHT });
     });

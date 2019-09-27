@@ -8,19 +8,12 @@ import styled, { css, ThemeProvider } from 'styled-components';
 import treeChanges from 'tree-changes';
 
 import history from 'modules/history';
-import theme, { headerHeight } from 'modules/theme';
-import { utils } from 'styled-minimal';
+import theme from 'modules/theme';
 
 import config from 'config';
 
 import Home from 'routes/Home';
-import NotFound from 'routes/NotFound';
 
-import SystemAlerts from 'containers/SystemAlerts';
-
-import GlobalStyles from 'components/GlobalStyles';
-
-import { ActionTypes } from 'constants/index';
 import { ToastContainer } from 'react-toastify';
 import Register from '../routes/Register';
 import 'react-toastify/dist/ReactToastify.css';
@@ -36,6 +29,7 @@ import EditSubTask from '../routes/EditSubTask';
 import JoinProject from '../routes/JoinProject';
 import { Detector } from 'react-detect-offline';
 import { setConnectionState } from '../actions';
+import GlobalStyles from '../components/GlobalStyles';
 
 const AppWrapper = styled.div`
   display: flex;
@@ -119,14 +113,14 @@ const routes = {
     component: CreateProject,
     isPublic: false,
     exact: false,
-  }
-}
+  },
+};
 
 export class App extends React.Component {
   static propTypes = {
+    classes: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
     user: PropTypes.object.isRequired,
-    classes: PropTypes.object.isRequired,
   };
 
   componentWillReceiveProps(nextProps) {
@@ -144,12 +138,12 @@ export class App extends React.Component {
   render() {
     const { dispatch, user, classes } = this.props;
     return (
-      <Router history={history} basename='/'>
+      <Router history={history} basename="/">
         <Detector
           polling={{ url: 'https://bzbee.herokuapp.com/' }}
           render={({ online }) => {
-            dispatch(setConnectionState(online))
-            return <> </>
+            dispatch(setConnectionState(online));
+            return <> </>;
           }}
         />
         <ThemeProvider theme={createMuiTheme(theme)}>
@@ -165,15 +159,10 @@ export class App extends React.Component {
             <ToastContainer autoClose={3000} hideProgressBar />
             <Main isAuthenticated={user.isAuthenticated} className={classes.main}>
               <Switch>
-                <Routes
-                  isAuthenticated={user.isAuthenticated}
-                  paths={routes}
-                />
-                <Route exact component={NotFound} />
+                <Routes isAuthenticated={user.isAuthenticated} paths={routes} />
+                <Route exact component={Home} />
               </Switch>
             </Main>
-            {/* <Footer /> */}
-            <SystemAlerts />
             <GlobalStyles />
           </AppWrapper>
         </ThemeProvider>

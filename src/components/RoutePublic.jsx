@@ -2,10 +2,18 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Route, Redirect } from 'react-router-dom';
 
-const RoutePublic = ({ component: Component, isAuthenticated, to, allowAuthenticated, ...rest }) => (
+const RoutePublic = ({
+  component: Component,
+  isAuthenticated,
+  to,
+  allowAuthenticated,
+  ...rest
+}) => (
   <Route
     {...rest}
-    render={props => (isAuthenticated && !allowAuthenticated ? <Redirect to={to} /> : <Component {...props} />)}
+    render={props =>
+      isAuthenticated && !allowAuthenticated ? <Redirect to={to} /> : <Component {...props} />
+    }
   />
 );
 

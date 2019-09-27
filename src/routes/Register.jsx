@@ -1,15 +1,13 @@
-import React, { useState } from 'react';
-import { withStyles, Grid, Button, Typography, Container, Paper } from '@material-ui/core';
+import { Button, Container, Grid, Paper, Typography, withStyles } from '@material-ui/core';
 import PropTypes from 'prop-types';
+import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { toast } from 'react-toastify';
 import { register } from '../actions/user';
+import PasswordField from '../components/PasswordField';
+import TitleOnlyHeader from '../components/TitleOnlyHeader';
 import UserTextField from '../components/UserTextField';
 import theme from '../modules/theme';
-import PasswordField from '../components/PasswordField';
-import Header from '../components/Header';
-import TitleOnlyHeader from '../components/TitleOnlyHeader';
-
 
 function validateEmail(mail) {
   return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(mail);
@@ -147,6 +145,7 @@ function Register({ classes, dispatch }) {
 }
 
 Register.propTypes = {
+  classes: PropTypes.object.isRequired,
   dispatch: PropTypes.func.isRequired,
 };
 

@@ -1,29 +1,28 @@
-import React from 'react';
-import { Grid, Box, withStyles } from '@material-ui/core';
+import { withStyles } from '@material-ui/core';
 import PropTypes from 'prop-types';
-import theme from '../modules/theme';
-
+import React from 'react';
 
 const styles = {
-
-    root: {
-        borderRadius: "50%",
-        width: '16px',
-        height: '16px',
-    },
-}
+  root: {
+    borderRadius: '50%',
+    width: '16px',
+    height: '16px',
+  },
+};
 
 function CircleOutlined({ classes, color }) {
-    return <div className={classes.root} style={{
-        border: '1px solid' + color,
-    }}>
-    </div>
+  return (
+    <div
+      className={classes.root}
+      style={{
+        border: `1px solid${color}`,
+      }}
+    />
+  );
 }
 
 CircleOutlined.propTypes = {
-    color: PropTypes.string.isRequired,
-    classes: PropTypes.object.isRequired,
-}
-
+  classes: PropTypes.object.isRequired,
+  color: PropTypes.string.isRequired,
+};
 export default withStyles(styles)(CircleOutlined);
-

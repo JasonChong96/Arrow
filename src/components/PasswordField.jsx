@@ -9,9 +9,9 @@ import {
   makeStyles,
 } from '@material-ui/core';
 import PropTypes from 'prop-types';
-import theme from '../modules/theme';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
+import theme from '../modules/theme';
 
 const styles = theme => ({
   formControlRoot: {
@@ -38,15 +38,28 @@ const useOutlinedInputStyles = makeStyles(() => ({
   notchedOutline: {},
 }));
 
-function PasswordField({ classes, password, onChange, showPassword, toggleShowPassword, confirmPassword, error }) {
-  const label = (confirmPassword ? "Confirm " : "" ) + "Password"
+function PasswordField({
+  classes,
+  password,
+  onChange,
+  showPassword,
+  toggleShowPassword,
+  confirmPassword,
+  error,
+}) {
+  const label = `${confirmPassword ? 'Confirm ' : ''}Password`;
   return (
     <FormControl className={classes.formControlRoot}>
-      <InputLabel error={error} htmlFor="adornment-password" variant="outlined" classes={useInputLabelStyles()}>
+      <InputLabel
+        error={error}
+        htmlFor="adornment-password"
+        variant="outlined"
+        classes={useInputLabelStyles()}
+      >
         {label}
       </InputLabel>
       <OutlinedInput
-      error={error}
+        error={error}
         id="adornment-password"
         type={showPassword ? 'text' : 'password'}
         value={password}
@@ -71,18 +84,18 @@ function PasswordField({ classes, password, onChange, showPassword, toggleShowPa
 }
 
 PasswordField.propTypes = {
-  password: PropTypes.string.isRequired,
-  onChange: PropTypes.func.isRequired,
-  showPassword: PropTypes.bool.isRequired,
-  toggleShowPassword: PropTypes.func.isRequired,
   classes: PropTypes.object.isRequired,
   confirmPassword: PropTypes.bool.isRequired,
   error: PropTypes.bool.isRequired,
+  onChange: PropTypes.func.isRequired,
+  password: PropTypes.string.isRequired,
+  showPassword: PropTypes.bool.isRequired,
+  toggleShowPassword: PropTypes.func.isRequired,
 };
 
 PasswordField.defaultProps = {
   confirmPassword: false,
   error: false,
-}
+};
 
 export default withStyles(styles)(PasswordField);

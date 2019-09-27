@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, withStyles, Grid, Button, Typography, Box } from '@material-ui/core';
-import { login } from '../actions/user';
 import PropTypes from 'prop-types';
+import { login } from '../actions/user';
 import theme from '../modules/theme';
 
 const styles = {
@@ -42,17 +42,17 @@ function UserTextField({ label, value, type, onChange, classes, error, required 
 
 UserTextField.propTypes = {
   classes: PropTypes.object.isRequired,
-  onChange: PropTypes.func.isRequired,
+  error: PropTypes.bool.isRequired,
   label: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  required: PropTypes.bool.isRequired,
   type: PropTypes.string.isRequired,
   value: PropTypes.string.isRequired,
-  error: PropTypes.bool.isRequired,
-  required: PropTypes.bool.isRequired,
 };
 
 UserTextField.defaultProps = {
-    error: false,
-    required: false,
-}
+  error: false,
+  required: false,
+};
 
 export default withStyles(styles)(UserTextField);
